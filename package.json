@@ -1,6 +1,15 @@
 {
   "name": "cheatsheet",
   "version": "1.0.0",
+  "description": "Dense, printable exam cheat sheets from JSON: flow layout, auto-fill, KaTeX, Mermaid, Excalidraw, PDF export",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ant-mann/cheatsheet.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "tsc -p ."
   },
