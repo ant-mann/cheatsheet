@@ -1,0 +1,210 @@
+@import 'katex/dist/katex.min.css';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/roboto-condensed';
+@import '@fontsource-variable/roboto-condensed/wght-italic.css';
+@import '@fontsource-variable/inter/wght-italic.css';
+@import '@fontsource-variable/noto-emoji';
+@import '@fontsource-variable/newsreader';
+@import '@fontsource-variable/newsreader/wght-italic.css';
+@import '@fontsource-variable/space-grotesk';
+
+/* geometricPrecision: without it Chrome rounds glyph advances and garbles text below ~2pt. */
+.sheet { text-rendering: geometricPrecision; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.page { position: relative; background: #fff; overflow: visible; flex: none; }
+.el { position: absolute; box-sizing: border-box; overflow: visible; }
+/* words never split mid-word; body text may hyphenate (headings don't) */
+.flow p, .flow li, .flow td, .flow blockquote { hyphens: auto; }
+[data-inner] { transform-origin: 0 0; }
+/* Theme fonts (an element's style.font / defaults.font override them inline). */
+.sheet { --font-body: 'Inter Variable', sans-serif; --font-head: inherit; }
+.el { font-family: var(--font-body), 'Noto Emoji Variable'; }
+/* Flowed elements: one newspaper-style multi-column box per page (filled column by column). */
+.flowwrap { position: absolute; pointer-events: none; }
+.flowbox { transform-origin: 0 0; column-fill: auto; pointer-events: auto; }
+.flowbox > .el { position: relative; }
+.flowbox > .el-text { orphans: 2; widows: 2; }
+.flowbox > .el:not(.el-text), .flowbox > .el.keep { break-inside: avoid; }
+.flowbox > .el.span { column-span: all; }
+/* a block that is only a heading stays with the block after it */
+.flowbox > .el-text:has(> .flow > :only-child:is(h1, h2, h3, h4)) { break-after: avoid; }
+.flowbox > .el.el-mermaid, .flowbox > .el.el-excalidraw { margin-left: auto; margin-right: auto; }
+.flow h1, .flow h2, .flow h3, .flow h4 { break-after: avoid; }
+.flow tr, .flow li, .flow table, .flow blockquote, .flow pre, .flow .katex-display { break-inside: avoid; }
+
+/* Compact markdown theme: cheat sheets are dense by design. --accent colours a section. */
+.el { --accent: #1f4e79; --tint: color-mix(in srgb, var(--accent) 12%, white); --tint2: color-mix(in srgb, var(--accent) 5%, white); }
+.flow > :first-child { margin-top: 0; }
+.flow > :last-child { margin-bottom: 0; }
+.flow p { margin: 0 0 0.25em; }
+.flow h1, .flow h2, .flow h3, .flow h4 { margin: 0.2em 0 0.12em; line-height: 1.15; color: var(--accent); }
+.flow h1 { font-size: 1.6em; font-weight: 800; letter-spacing: -0.01em; }
+/* h2 = section bar */
+.flow h2 { font-size: 1.15em; font-weight: 700; color: #fff; background: var(--accent); padding: 0.08em 0.35em; border-radius: 0.15em; }
+/* h3 = subsection with an accent hairline */
+.flow h3 { font-size: 1.05em; font-weight: 700; padding-bottom: 0.05em; box-shadow: inset 0 -0.06em 0 var(--accent); }
+.flow h4 { font-size: 1em; font-weight: 700; }
+.flow strong { font-weight: 700; }
+.flow em { font-style: italic; }
+.flow mark { background: color-mix(in srgb, #ffd400 45%, white); padding: 0 0.1em; }
+.flow ul, .flow ol { margin: 0 0 0.25em; padding-left: 0.9em; list-style: none; }
+.flow ol { counter-reset: li; padding-left: 1.25em; }
+.flow li { margin: 0; position: relative; }
+.flow ul > li::before { content: '•'; position: absolute; left: -0.7em; color: var(--accent); }
+.flow ol > li { counter-increment: li; }
+.flow ol > li::before { content: counter(li) '.'; position: absolute; right: calc(100% + 0.25em); color: var(--accent); font-weight: 700; }
+.flow li > p { margin: 0; }
+/* Thin rules use box-shadow/background: CSS borders snap to >= 1px (0.26mm), even in PDF. */
+.flow table { width: 100%; border-collapse: collapse; margin: 0 0 0.25em; box-shadow: inset 0.05em 0.05em 0 #999; }
+.flow th, .flow td { padding: 0.02em 0.3em; text-align: left; vertical-align: top; box-shadow: inset -0.05em -0.05em 0 #999; }
+.flow th { background: var(--tint); font-weight: 700; }
+.flow tr:nth-child(even) td { background: var(--tint2); }
+.flow code { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 0.9em; background: #f3f3f3; padding: 0 0.2em; border-radius: 0.2em; box-shadow: inset 0 0 0 0.05em #ccc; white-space: nowrap; }
+.flow pre { margin: 0 0 0.25em; white-space: pre-wrap; letter-spacing: -0.03em; line-height: 1.05; background: #f4f4f4; padding: 0.2em 0.3em; border-radius: 0.2em; }
+.flow pre code { background: none; padding: 0; box-shadow: none; white-space: inherit; }
+.flow hr { border: 0; height: 0.05em; background: var(--accent); opacity: 0.5; margin: 0.25em 0; }
+/* blockquote = callout box (definitions, warnings, key results) */
+.flow blockquote { margin: 0 0 0.25em; padding: 0.15em 0.4em; background: var(--tint2); box-shadow: inset 0.18em 0 0 var(--accent); }
+.flow blockquote > :last-child { margin-bottom: 0; }
+/* Callouts: "> [!warn] ..." etc. Plain ">" uses the section accent. */
+.flow blockquote.c-warn { --c: #e08a00; background: #fff6db; }
+.flow blockquote.c-ok { --c: #2e8b3a; background: #edf7ee; }
+.flow blockquote.c-bad { --c: #c62828; background: #fdeded; }
+.flow blockquote.c-info { --c: #1f6fb2; background: #eaf2fb; }
+.flow blockquote.c-stop { --c: #7a2a20; background: #a6473b; color: #fff; font-weight: 700; }
+.flow blockquote.c-trigger { --c: #aaa; background: #f4f4f4; color: #555; font-style: italic; }
+.flow blockquote[class^='c-'] { box-shadow: inset 0.18em 0 0 var(--c); }
+/* Inline/cell tints for raw HTML: <td class="bad">, <span class="ok">, <b class="warn"> */
+.flow .bad { background: #fdeded; } .flow .ok { background: #edf7ee; } .flow .warn { background: #fff6db; } .flow .info { background: #eaf2fb; }
+.flow span.bad, .flow span.ok, .flow span.warn, .flow span.info { padding: 0 0.15em; border-radius: 0.15em; }
+/* Title row: <div class="titlebar"><b>STAT 240 — MIDTERM</b><span>Page 1 · Sections 7–10</span></div> */
+.flow .titlebar { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; padding-bottom: 0.15em; box-shadow: inset 0 -0.12em 0 var(--accent); margin-bottom: 0.3em; }
+.flow .titlebar > :first-child { font-size: 1.5em; font-weight: 800; color: var(--accent); letter-spacing: 0.01em; }
+.flow .titlebar > :last-child { color: #555; }
+/* Page bar: <div class="pagebar"><b>STAT 240 · Final</b><span>PAGE 1</span><span>INFERENCE</span><span>PAGE 1 OF 4</span></div>
+   (first = title, middle = small-caps labels, last = right-aligned) */
+.flow .pagebar { display: flex; align-items: baseline; gap: 1em; background: #2b2b2b; color: #f3efe6; padding: 0.35em 0.7em; border-radius: 0.3em; box-shadow: inset 0.3em 0 0 var(--accent); }
+.flow .pagebar > :first-child { font-family: var(--font-head); font-size: 1.3em; font-weight: 500; }
+.flow .pagebar > :not(:first-child) { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.flow .pagebar > :last-child { margin-left: auto; }
+/* Router: <div class="router"><span>Binary? → proportion</span>…</div>, a grid of "question → section" cues */
+.flow .router { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.1em 1em; padding: 0.35em 0.7em; border-radius: 0.4em; box-shadow: inset 0 0 0 0.12em var(--accent); font-size: 1.2em; font-weight: 700; color: #8b3a1e; }
+
+/* Cards: tinted box with an accent bar; ## headings become accent caps with a marker. */
+.el.card { -webkit-box-decoration-break: clone; box-decoration-break: clone; background: var(--tint2); box-shadow: inset calc(0.5 * var(--u)) 0 0 var(--accent); padding: calc(0.8 * var(--u)) calc(1 * var(--u)) calc(0.8 * var(--u)) calc(1.6 * var(--u)); }
+.el.card .flow h2 { background: none; color: var(--accent); padding: 0; text-transform: uppercase; letter-spacing: 0.02em; }
+.el.card .flow h2::before { content: ''; display: inline-block; width: 0.5em; height: 0.6em; margin-right: 0.3em; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.flow .sym-ok { color: #2e8b3a; } .flow .sym-bad { color: #c62828; } .flow .sym-warn { color: #e08a00; }
+
+/* KaTeX hard-codes px sizes (Safari hacks, 1px rule minimums) that dominate at tiny
+   font sizes; neutralize them and draw rules as backgrounds (borders snap to >= 1px). */
+.sheet .katex .vlist-t2 { margin-right: 0; }
+.sheet .katex .vlist-s { font-size: 0; min-width: 0; width: 0; }
+.sheet .katex .mtable .vertical-separator { min-width: 0; }
+.sheet .katex .mfrac .frac-line, .sheet .katex .katex-overline .overline-line,
+.sheet .katex .katex-underline .underline-line, .sheet .katex .katex-hline {
+  min-height: 0; border-bottom-style: none; height: 0.04em; background: currentColor;
+}
+.sheet .katex .katex-hdashline { min-height: 0; }
+.flow .katex { font-size: 1.1em; }
+.flow .katex-display { margin: 0.15em 0; }
+.el-latex .katex-display { margin: 0; }
+.el-latex .katex { font-size: 1em; }
+
+.fig svg, .fig img { display: block; width: 100%; height: auto; }
+.fig.fixed svg, .fig.fixed img { height: 100%; object-fit: contain; }
+
+.render-error { color: #c00; font-family: monospace; white-space: pre-wrap; }
+.overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+
+@media print {
+  .sheet { gap: 0; }
+  /* contain: each sheet page is its own layout root, so Chrome's print fragmentation can't split the multi-column flow inside it */
+  .page { break-after: page; break-inside: avoid; overflow: hidden; contain: strict; }
+}
+
+/* ---- editorial theme: parchment paper, serif small-caps headings, rounded pastel cards ---- */
+.theme-editorial { --font-body: 'Space Grotesk Variable', sans-serif; --font-head: 'Newsreader Variable', serif; }
+.theme-editorial .page { background: #f8f5ee; }
+.theme-editorial .el { --tint: color-mix(in srgb, var(--accent) 16%, #fbf9f4); --tint2: color-mix(in srgb, var(--accent) 7%, #fbf9f4); }
+.theme-editorial .flow h1 { font-family: var(--font-head); font-weight: 500; letter-spacing: 0; }
+.theme-editorial .flow h2, .theme-editorial .el.card .flow h2 {
+  font-family: var(--font-head); font-weight: 500; font-size: 1.05em; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--accent); background: none; padding: 0; border-radius: 0; box-shadow: none;
+}
+.theme-editorial .el.card .flow h2::before { display: none; }
+.theme-editorial .flow h3 { font-family: var(--font-head); font-weight: 600; box-shadow: none; }
+.theme-editorial .flow h4 { color: #2f7f86; font-size: 0.95em; margin: 0.25em 0 0.05em; }
+.theme-editorial .el.card {
+  border-radius: calc(1 * var(--u)); padding: calc(0.8 * var(--u)) calc(1 * var(--u)) calc(0.8 * var(--u)) calc(1.4 * var(--u));
+  box-shadow: inset 0 0 0 calc(0.12 * var(--u)) color-mix(in srgb, var(--accent) 30%, transparent), inset calc(0.45 * var(--u)) 0 0 var(--accent);
+}
+/* plain ">" = formula box: beige, serif, with a tan tick */
+.theme-editorial .flow blockquote:not([class]) { background: #f1ebdf; font-family: var(--font-head); border-radius: 0.25em; padding: 0.15em 0.45em; box-shadow: inset 0.15em 0 0 #c9b28a; }
+.theme-editorial .flow blockquote[class^='c-'] { border-radius: 0.3em; font-weight: 500; }
+.theme-editorial .flow blockquote[class^='c-'] strong { font-weight: 700; }
+.theme-editorial .flow blockquote.c-warn { --c: #b0603a; background: #fbeee6; color: #8b3a1e; box-shadow: inset 0 0 0 0.06em #d9a689, inset 0.18em 0 0 var(--c); }
+.theme-editorial .flow blockquote.c-bad { color: #8b2020; }
+.theme-editorial .flow blockquote.c-ok { color: #1f5f2a; }
+.theme-editorial .flow blockquote.c-stop { color: #fff; }
+.theme-editorial .flow th { font-family: var(--font-head); font-size: 0.7em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #666; background: #efe8da; }
+.theme-editorial .flow td { background: #f6f1e7; }
+.theme-editorial .flow tr:nth-child(even) td { background: #f1ebdf; }
+.theme-editorial .flow td .katex { color: #2b4a8b; }
+.theme-editorial .flow table { box-shadow: inset 0.05em 0.05em 0 #d8cdb8; }
+.theme-editorial .flow th, .theme-editorial .flow td { box-shadow: inset -0.05em -0.05em 0 #d8cdb8; }
+.theme-editorial .flow code { background: #efe9dc; box-shadow: inset 0 0 0 0.05em #cfc3ab; }
+.theme-editorial .flow pre { background: #efe9dc; box-shadow: inset 0 0 0 0.05em #cfc3ab; }
+.theme-editorial .flow pre code { background: none; box-shadow: none; }
+.theme-editorial .flow ul > li::before { content: '▸'; color: #9a8f7c; }
+.theme-editorial .flow .router { color: #8b3a1e; }
+
+/* ---- swiss theme: white paper, solid accent header bands, hairline cards, booktabs tables ---- */
+.theme-swiss { --font-body: 'Roboto Condensed Variable', sans-serif; --font-head: 'Inter Variable', sans-serif; }
+.theme-swiss .page { background: #fff; }
+.theme-swiss .el { --tint: color-mix(in srgb, var(--accent) 14%, white); --tint2: color-mix(in srgb, var(--accent) 6%, white); color: #16181d; }
+.theme-swiss .el.card {
+  background: #fff; border-radius: calc(0.6 * var(--u));
+  padding: calc(0.7 * var(--u)) calc(0.9 * var(--u)) calc(0.7 * var(--u));
+  box-shadow: inset 0 0 0 calc(0.13 * var(--u)) color-mix(in srgb, var(--accent) 45%, white);
+}
+/* ## = solid band bleeding to the card edges */
+.theme-swiss .el.card .flow h2, .theme-swiss .flow h2 {
+  font-family: var(--font-head); font-weight: 800; font-size: 0.98em; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #fff; background: var(--accent); border-radius: calc(0.6 * var(--u)) calc(0.6 * var(--u)) 0 0;
+  margin: calc(-0.7 * var(--u)) calc(-0.9 * var(--u)) 0.3em; padding: 0.22em calc(0.9 * var(--u)) 0.18em;
+}
+.theme-swiss .el:not(.card) .flow h2 { margin: 0 0 0.3em; border-radius: 0.2em; padding: 0.15em 0.4em; }
+.theme-swiss .el.card .flow h2::before { display: none; }
+.theme-swiss .flow h3 { font-family: var(--font-head); font-weight: 700; color: var(--accent); box-shadow: inset 0 -0.06em 0 var(--accent); }
+/* #### = small accent caps with a hairline running to the right */
+.theme-swiss .flow h4 {
+  display: flex; align-items: center; gap: 0.4em; margin: 0.35em 0 0.1em;
+  font-family: var(--font-head); font-size: 0.78em; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent);
+}
+.theme-swiss .flow h4::after { content: ''; flex: 1; height: 0.08em; background: color-mix(in srgb, var(--accent) 35%, white); }
+.theme-swiss .flow strong { font-weight: 700; color: #000; }
+.theme-swiss .flow ul > li::before { content: '›'; color: var(--accent); font-weight: 700; }
+/* booktabs tables: accent header rule, hairline row rules, no grid */
+.theme-swiss .flow table { box-shadow: none; }
+.theme-swiss .flow th, .theme-swiss .flow td { box-shadow: inset 0 -0.05em 0 #d9dce2; background: none; }
+.theme-swiss .flow tr:nth-child(even) td { background: color-mix(in srgb, var(--accent) 4%, white); }
+.theme-swiss .flow th {
+  font-family: var(--font-head); font-size: 0.72em; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--accent); box-shadow: inset 0 -0.12em 0 var(--accent);
+}
+/* code */
+.theme-swiss .flow code { background: #f2f3f6; box-shadow: inset 0 0 0 0.05em #d5d8de; color: #1d2a44; }
+.theme-swiss .flow pre { background: #f5f6f9; border-radius: 0.15em; box-shadow: inset 0.14em 0 0 color-mix(in srgb, var(--accent) 70%, white); padding: 0.2em 0.35em 0.2em 0.5em; }
+.theme-swiss .flow pre code { background: none; box-shadow: none; }
+/* callouts: white-ish fill, coloured edge, label weight on <strong> only */
+.theme-swiss .flow blockquote { border-radius: 0.2em; }
+.theme-swiss .flow blockquote:not([class]) { background: var(--tint2); box-shadow: inset 0.16em 0 0 var(--accent); }
+.theme-swiss .flow blockquote.c-ok { color: #174d22; }
+.theme-swiss .flow blockquote.c-bad { color: #7d1a1a; }
+.theme-swiss .flow blockquote.c-warn { color: #6b3a00; }
+.theme-swiss .flow blockquote.c-info { color: #123f6b; }
+/* page bar + router */
+.theme-swiss .flow .pagebar { background: #111318; color: #fff; border-radius: 0.25em; box-shadow: inset 0.35em 0 0 var(--accent); }
+.theme-swiss .flow .pagebar > :first-child { font-weight: 800; letter-spacing: -0.01em; }
+.theme-swiss .flow .router { gap: 0.15em 0.3em; padding: 0; box-shadow: none; color: #16181d; font-weight: 600; font-size: 1.1em; }
+.theme-swiss .flow .router > span { background: #f3f4f7; border-radius: 0.2em; padding: 0.12em 0.45em; box-shadow: inset 0.15em 0 0 var(--accent); }

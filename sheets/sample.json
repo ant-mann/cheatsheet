@@ -1,0 +1,87 @@
+{
+  "page": {
+    "size": "a4",
+    "margin": 3,
+    "count": 1,
+    "fill": true
+  },
+  "defaults": {
+    "fontSize": 4
+  },
+  "guides": {
+    "columns": 4,
+    "gutter": 1.5
+  },
+  "elements": [
+    {
+      "id": "title",
+      "type": "text",
+      "span": "all",
+      "md": "# Linear Algebra \u2014 Midterm"
+    },
+    {
+      "id": "vs",
+      "type": "text",
+      "md": "## Vector spaces\n**Subspace**: contains $0$, closed under $+$ and scalar $\\cdot$.\n**Span** = all linear combinations. **Independent** iff $\\sum c_iv_i=0 \\Rightarrow c_i=0$.\n**Basis** = independent spanning set; **dim** = size of any basis."
+    },
+    {
+      "id": "mat",
+      "type": "text",
+      "style": {
+        "accent": "#8b2e2e"
+      },
+      "md": "## Matrices\n$\\operatorname{rank}=\\dim\\mathrm{Col}=\\dim\\mathrm{Row}$\n\n> **Rank\u2013nullity** $\\operatorname{rank}A+\\operatorname{nullity}A=n$\n\n$\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}^{-1}=\\frac{1}{ad-bc}\\begin{bmatrix}d&-b\\\\-c&a\\end{bmatrix}$\n\n$(AB)^T=B^TA^T$, $(AB)^{-1}=B^{-1}A^{-1}$"
+    },
+    {
+      "id": "imt",
+      "type": "text",
+      "style": {
+        "accent": "#8b2e2e"
+      },
+      "md": "### Invertible matrix thm ($n\\times n$)\n$A$ invertible \u21d4 $\\det A\\ne0$ \u21d4 rank $n$ \u21d4 $Ax=0$ only trivial \u21d4 columns a basis \u21d4 $0$ not an eigenvalue"
+    },
+    {
+      "id": "det",
+      "type": "text",
+      "style": {
+        "accent": "#2e6b3a"
+      },
+      "md": "## Determinants\n- $\\det(AB)=\\det A\\det B$, $\\det A^T=\\det A$\n- $\\det(cA)=c^n\\det A$\n- row swap flips sign; adding a row multiple: no change\n- triangular: product of diagonal"
+    },
+    {
+      "id": "eig",
+      "type": "text",
+      "style": {
+        "accent": "#6b3e8b"
+      },
+      "md": "## Eigen\n$Av=\\lambda v,\\ v\\ne0$; solve $\\det(A-\\lambda I)=0$.\n$\\operatorname{tr}A=\\sum\\lambda_i$, $\\det A=\\prod\\lambda_i$.\nDiagonalizable \u21d4 $n$ indep. eigenvectors: $A=PDP^{-1}$, $A^k=PD^kP^{-1}$.\n> **Spectral thm** symmetric \u21d2 real $\\lambda$, $A=Q\\Lambda Q^T$"
+    },
+    {
+      "id": "orth",
+      "type": "text",
+      "style": {
+        "accent": "#136f74"
+      },
+      "md": "## Orthogonality\n| what | formula |\n|---|---|\n| proj onto $a$ | $\\frac{a\\cdot b}{a\\cdot a}a$ |\n| proj onto Col $A$ | $A(A^TA)^{-1}A^T$ |\n| least squares | $A^TA\\hat x=A^Tb$ |\n| Gram\u2013Schmidt | $u_k=v_k-\\sum_{j<k}\\mathrm{proj}_{u_j}v_k$ |"
+    },
+    {
+      "id": "svd",
+      "type": "text",
+      "style": {
+        "accent": "#a8610a"
+      },
+      "md": "## SVD\n$A=U\\Sigma V^T$, $\\sigma_i=\\sqrt{\\lambda_i(A^TA)}$. Rank = # nonzero $\\sigma$. Best rank-$k$: keep top $k$ (Eckart\u2013Young)."
+    },
+    {
+      "id": "axb-h",
+      "type": "text",
+      "md": "## Solving $Ax=b$"
+    },
+    {
+      "id": "axb",
+      "type": "mermaid",
+      "src": "graph TD\n  A[\"[A|b]\"] --> R[RREF]\n  R --> P{pivot in last col?}\n  P -- yes --> N[no solution]\n  P -- no --> F{free vars?}\n  F -- yes --> I[infinitely many]\n  F -- no --> U[unique]",
+      "gap": 0
+    }
+  ]
+}

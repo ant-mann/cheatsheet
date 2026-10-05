@@ -1,0 +1,733 @@
+{
+ "page": {
+  "size": "letter",
+  "margin": 3.5,
+  "count": 2,
+  "fill": true
+ },
+ "theme": "swiss",
+ "defaults": {
+  "font": "Roboto Condensed Variable, sans-serif",
+  "fontSize": 3,
+  "lineHeight": 1.12,
+  "style": {
+   "card": true
+  }
+ },
+ "guides": {
+  "columns": 4,
+  "gutter": 1.5
+ },
+ "elements": [
+  {
+   "id": "bar1",
+   "type": "text",
+   "page": 1,
+   "md": "<div class=\"pagebar\"><b>CS 564 · Midterm 1</b><span>Page 1</span><span>SQL: DDL · Keys · Queries · Aggregation · Nesting · Sets · NULLs · Joins</span><span>Lectures 1–5 · HW1</span></div>",
+   "span": "all",
+   "style": {
+    "card": false
+   }
+  },
+  {
+   "id": "router1",
+   "type": "text",
+   "page": 1,
+   "md": "<div class=\"router\"><span>\"for each X\" → GROUP BY X</span><span>condition on a group/count → HAVING</span><span>\"all / every / none\" → NOT EXISTS · EXCEPT · ALL</span><span>\"some / at least one\" → EXISTS · IN · join+DISTINCT</span><span>keep unmatched rows → LEFT OUTER JOIN</span><span>max + its name → nested = (SELECT MAX…)</span></div>",
+   "span": "all",
+   "style": {
+    "card": false
+   }
+  },
+  {
+   "id": "ddl",
+   "type": "text",
+   "page": 1,
+   "md": "## 1 · Relational model · DDL\n**Relation** = table; **attribute** = column (atomic type = **domain**: INTEGER, REAL, CHAR(n), TEXT); **tuple** = row.\n**Schema** = name + attrs (~type, stable). **Instance** = set of tuples (~value, changes). DB schema = set of relation schemas.\n```\nCREATE TABLE Author(\n  authorid INTEGER PRIMARY KEY,\n  firstname CHAR(20) NOT NULL,\n  lastname CHAR(30),\n  email TEXT UNIQUE);\n-- composite: PRIMARY KEY(name,category)\nINSERT INTO Author\n  VALUES(1,'Dan','Brown');\nINSERT INTO Author(authorid, lastname)\n  VALUES(2,'Verne');\nUPDATE Author SET authorid=5\n  WHERE authorid=1;\nDELETE FROM Author WHERE authorid=1;\nDROP TABLE Book;\n```\n**PRIMARY KEY**: minimal unique id; **exactly one** per table; **no NULLs**. Dup insert → rejected.\n**UNIQUE**: also unique id; **many** allowed. NULLs in UNIQUE: prof said **not allowed** (answer that on his exam); standard SQL/SQLite do allow them.\n**VIEW** `CREATE VIEW V AS SELECT…` — virtual, not stored; query re-run each use; usable like a table in queries. ❌ can't INSERT/DELETE rows of a view (quiz).\nAtomic = can't subdivide (❌ array/list/struct). Table **without PK allowed** → duplicate rows OK. `DEFAULT v` fills omitted INSERT cols (else NULL). `DELETE FROM T` (no WHERE) empties, table stays; `DROP TABLE T` removes schema+data. Empty table = valid instance.\nView vs WITH: WITH lives for **one query**; view persists. View = stored SQL text, **inlined** into each query (never materialized); `CREATE TABLE … AS SELECT` materializes.",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "fk",
+   "type": "text",
+   "page": 1,
+   "md": "## 2 · Foreign keys\n```\nFOREIGN KEY (authorid)\n  REFERENCES Author(authorid)\n  ON DELETE CASCADE\n  ON UPDATE SET NULL\n```\nReferenced attrs **must be PRIMARY KEY or UNIQUE**. Every non-NULL `Book.authorid` must exist in `Author`.\nViolations (R=Book references S=Author): ① insert/update in **R** with value not in S ② delete/update in **S** leaves R tuples **dangling**.\n\n| policy | delete/update of S row |\n|---|---|\n| **reject** (default) | refused |\n| CASCADE | S row deleted/updated; del → referencing R rows deleted; upd → new key copied into R |\n| SET NULL | S row deleted/updated; referencing R values → NULL (R rows stay) |\n\nChoose independently for UPDATE and DELETE: 3×3 = **9** combos (prof said 6 in class). Policies only affect changes to **S**; bad insert into **R** always rejected. SQLite: `PRAGMA foreign_keys=ON`.\n\n> [!ok] Quiz (ON DELETE CASCADE): del Book → Author deleted? **F** · del Author → Book always deleted? **F** (only if referenced) · add Author → Book unchanged **T** · add Book never rejected? **F**\nReferencing col (Book.authorid) need **not** be unique. Composite: `FOREIGN KEY(a,b) REFERENCES S(x,y)`. Effects flow **opposite** the reference arrow; CASCADE can chain. Lecture: update Book.authorid→100 (not in Author) ❌; delete referenced Author ❌ (dangling).",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "select",
+   "type": "text",
+   "page": 1,
+   "md": "## 3 · Single-table SELECT\n```\nSELECT [DISTINCT] a, expr AS alias\nFROM R          -- SELECT * = all attrs\nWHERE cond      -- selection (rows)\nORDER BY a DESC, b    -- ASC default\nLIMIT n;\n```\nSemantics: tuple var ranges over R → keep if WHERE **TRUE** → compute SELECT.\n**Bag semantics** by default (dups kept); `DISTINCT` → set. DISTINCT on a key ⇒ same #rows (quiz).\nWHERE: `=` `<>` `<` `>` `<=` `>=`, `+ - * /`, AND OR NOT, `||` concat, LIKE, `IS [NOT] NULL`, BETWEEN, `IN (…)`.\n`LIKE`: `%` = any sequence (incl. empty), `_` = exactly one char. `LIKE 'monarchy'` = exact match only!\nStrings in **'single quotes'**. `Population/1000000` = **integer division**; use `/1000000.0`.\nORDER BY ties broken by next key; can use alias. ORDER BY+LIMIT 1 ≠ `= (SELECT MAX…)` when **ties** (LIMIT drops them).\n```\nCASE WHEN c1 THEN v1\n     WHEN c2 THEN v2\n     ELSE v END\n```\nFirst true WHEN wins; no ELSE → NULL. Usable in SELECT, inside aggregates, with EXISTS.\n`ROUND(x,2)` · `substr(s,i,len)` (1-indexed) · `group_concat(v)`\n`SELECT DISTINCT a` → **fewer or same** rows; without DISTINCT → same #rows. DISTINCT **costs more** (sort/hash). No ORDER BY ⇒ row order **not guaranteed**. `LIMIT` takes a constant, after ORDER BY. Use the original column name in WHERE, not the SELECT alias. Parenthesize mixed AND/OR. WHERE is per row → comparing 2 rows needs self-join.",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "multi",
+   "type": "text",
+   "page": 1,
+   "md": "## 4 · Multi-table queries (joins)\n```\nSELECT C.Name\nFROM Country C, CountryLanguage L1,\n     CountryLanguage L2\nWHERE C.Code = L1.CountryCode\n  AND C.Code = L2.CountryCode\n  AND L1.Language = 'Greek'\n  AND L2.Language = 'English';\n```\nQualify ambiguous attrs `R.a`; aliases **required** for self-join (2 copies). Unqualified shared names = bad style.\n**Semantics:** ① cross product of FROM ② filter WHERE ③ project SELECT ④ DISTINCT dedup. = nested loops `for t1∈R1 … for tn∈Rn: if cond: add`. DBMS evaluates smarter (declarative).\n\n```\nSELECT R.D FROM R, S\nWHERE R.A=S.B AND S.C='e'\n```\n| R(A,D) | S(B,C) | steps |\n|---|---|---|\n| 1a 2b 2c | 1d 2e | × 6 rows → σ (2b2e),(2c2e) → π **b, c** |\n\n$|R\\times S|=|R|\\cdot|S|$ rows. Join with no WHERE = cross product. `A JOIN B ON c` ≡ `FROM A,B WHERE c`.\n\n> [!warn] Greek **and** English: one copy `L.Language='Greek' AND L.Language='English'` → **empty** (one cell can't be both); `OR` → either. ✓ two copies L1, L2 (3 langs → L3).\n\nKey–FK joins ≈ 90%. `ON` may be any condition; JOINs chain.",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "agg",
+   "type": "text",
+   "page": 1,
+   "md": "## 5 · Aggregation · GROUP BY · HAVING\n`SUM AVG COUNT MIN MAX`; `COUNT(*)` = #rows; `COUNT(DISTINCT a)` dedups first. Aggregates **ignore NULLs** (`COUNT(a)` skips NULL a; `COUNT(*)` doesn't).\n```\nSELECT [DISTINCT] S\nFROM R, S, …   WHERE C1\nGROUP BY attrs HAVING C2\nORDER BY …     LIMIT n;\n```\n**Eval order:** FROM-WHERE → GROUP → HAVING (keep groups) → SELECT aggs → ORDER BY → LIMIT.\n\n> [!warn] **Rule:** with GROUP BY/aggs, each SELECT item is **aggregated or in GROUP BY**. HAVING may use aggregates + GROUP BY attrs only. WHERE filters **rows** (no aggs); HAVING filters **groups**.\n\n| R(A,B,C) | SELECT A, SUM(B\\*C) GROUP BY A |\n|---|---|\n| a2 0 · a5 1 · b7 1 · b6 0 · c4 1 | a **5** · b **7** · c **4**; HAVING >5 → only b |\n\n> [!ok] Quiz Book(bookid,title,authorid), GROUP BY authorid. Valid: SELECT `COUNT(bookid)` ✓ · `COUNT(bookid), authorid` ✓ · HAVING `COUNT(bookid)>1` ✓. Invalid: SELECT `title` ❌ · HAVING `bookid=1` ❌ · GROUP BY brand HAVING `price>100` ❌\n\nGroup by a key ⇒ every group has 1 row. No GROUP BY + agg ⇒ one output row (whole table = 1 group).\nCountries with ≥10 cities: GROUP BY `C.Name` HAVING `COUNT(T.ID)>9`. HAVING with join usually **faster** than correlated COUNT subquery.\n**HAVING requires GROUP BY.** HAVING may use SELECT alias (`… AS N … HAVING N>2`) and a different agg than SELECT. GROUP BY acts like DISTINCT (1 row/group). Agg without GROUP BY → 1×1 table. **All NULLs form ONE group** (GROUP BY and DISTINCT treat NULLs as equal, despite NULL=NULL → U). Ill-formed GROUP BY (`SELECT Continent … GROUP BY Code`) **runs in SQLite** (arbitrary value) but is ❌ on exam.",
+   "style": {
+    "accent": "#2e6b3a"
+   }
+  },
+  {
+   "id": "nest",
+   "type": "text",
+   "page": 1,
+   "md": "## 6 · Nested queries\nSubquery = value or table (SQL is **compositional**: every result is a multiset). Allowed in **FROM** (needs `AS` alias), **WHERE**, or factored out with `WITH`:\n```\nWITH C AS (SELECT Name, Continent\n           FROM Country\n           WHERE Population > 50000000),\n     D AS (…)   -- several, comma-sep.\nSELECT C.Name FROM C\nWHERE C.Continent = 'Europe';\n```\n**Scalar** (above-average European country):\n```\nWHERE C.Continent = 'Europe'\n  AND C.Population >\n   (SELECT AVG(Population) FROM Country\n    WHERE Continent = 'Europe')\n```\n**Argmax with name** (keeps ties): `Population =` `(SELECT MAX(Population) …)`. **Per group** (top earner per dept) = correlated:\n```\nSELECT E.name, E.salary FROM Emp E\nWHERE E.salary = (SELECT MAX(E2.salary)\n   FROM Emp E2 WHERE E2.dept = E.dept)\n```\n\n| op | true when |\n|---|---|\n| x IN (Q) · NOT IN | x is / isn't in Q |\n| EXISTS (Q) · NOT EXISTS | Q non-empty / empty |\n| x op ANY (Q) | op holds for **some** row |\n| x op ALL (Q) | op for **every** row (T if Q empty) |\n\nop before ANY/ALL must be a comparison. SQLite has no ANY/ALL.\n**Correlated** = inner query uses an **outer** variable → re-run per outer row. Merely nested ≠ correlated (quiz — **not** correlated):\n```\nWHERE stid NOT IN (SELECT s.stid\n  FROM Student s, Enrolled e\n  WHERE s.stid = e.stid\n    AND e.numcredits > 3)\n```\n**∃ \"some city > 5M\"** — all equivalent:\n```\nAND EXISTS (SELECT * FROM City T\n    WHERE T.Population > 5000000\n    AND T.CountryCode = C.Code)\nAND C.Code IN (SELECT CountryCode\n    FROM City WHERE Population>5000000)\nAND 5000000 <= ANY (SELECT T.Population\n    FROM City T\n    WHERE T.CountryCode = C.Code)\n-- unnested: join + DISTINCT\nSELECT DISTINCT C.Name\nFROM Country C, City T\nWHERE C.Continent = 'Europe'\n  AND T.CountryCode = C.Code\n  AND T.Population > 5000000\n```\n**∀ \"all cities < 1M\"** = ¬∃ violator:\n```\nAND NOT EXISTS (SELECT * FROM City T\n    WHERE T.Population > 1000000\n    AND T.CountryCode = C.Code)\nAND 1000000 > ALL (SELECT T.Population\n    FROM City T\n    WHERE T.CountryCode = C.Code)\n-- or: Europe countries EXCEPT\n--   Europe countries ⋈ City > 1M\n```\nUnnest ∃/IN → join **+ DISTINCT** (join duplicates outer rows). ∀/NOT EXISTS can't be a plain join → EXCEPT.\n\n> [!ok] Quiz 4: WHERE `color='green'` GROUP BY brand HAVING `COUNT(*)<3` ≡ only the version with **DISTINCT** brand + outer `color='green'` + correlated COUNT of q with `q.brand=p.brand` AND `q.color='green'` `< 3`. No DISTINCT → dups ❌. No outer green filter → brands with 0 green ❌.\n`x op (Q)` needs Q = **1 row × 1 col** (else IN/ANY/ALL/EXISTS). Correlated only in **WHERE** (not FROM/WITH); **slower** (runs per outer row). WITH tables may reference earlier ones.\n∀ also via grouping: GROUP BY `C.Code` HAVING `MAX(T.Population)<1000000`. ⚠ NOT EXISTS keeps outer rows with **no** inner rows (vacuously true); GROUP BY form drops them. NULL value escapes a violator test (`sal<=50000` is U).\n\n> [!info] Exam: nested **and** unnested answers both accepted.",
+   "style": {
+    "accent": "#2e6b3a"
+   }
+  },
+  {
+   "id": "sets",
+   "type": "text",
+   "page": 1,
+   "md": "## 7 · Set operators\n`(Q1) UNION | INTERSECT | EXCEPT (Q2)` — **set** semantics, dups removed. Add `ALL` → bag semantics. Same #cols/types. SQLite: only UNION ALL; groups set ops **left-to-right**.\nR = {1,1,1,2,3}, S = {1,1,2,2,4,5}:\n\n| op | result | copies |\n|---|---|---|\n| UNION | 1 2 3 4 5 | |\n| INTERSECT | 1 2 | |\n| R EXCEPT S | 3 | |\n| S EXCEPT R | 4 5 | |\n| UNION ALL | 1×5 2×3 3 4 5 | $m+n$ |\n| INTERSECT ALL | 1 1 2 | $\\min(m,n)$ |\n| EXCEPT ALL | 1 3 | $\\max(m-n,0)$ |\n\nNo set op needed:\n```\n-- R INTERSECT S\nSELECT DISTINCT R.A FROM R, S\nWHERE R.A = S.A\n-- R ∩ (S ∪ T)  ⚠ wrong if S or T empty\nSELECT DISTINCT R.A FROM R, S, T\nWHERE R.A=S.A OR R.A=T.A\n```\nGreek **and** English speakers: self-join L1,L2 **or** INTERSECT of two queries.\nUNION, INTERSECT symmetric; **EXCEPT not** (R−S ≠ S−R). Schemas must match.",
+   "style": {
+    "accent": "#6b3e8b"
+   }
+  },
+  {
+   "id": "nulls",
+   "type": "text",
+   "page": 1,
+   "md": "## 8 · NULLs · 3-valued logic\nNULL = missing (unknown value) or inapplicable (spouse of unmarried). Not allowed in PK.\nArithmetic/concat with NULL → **NULL** (`(10*x)+5`, `NULL/0`, `'a'||NULL`). Any comparison with NULL (even `NULL=NULL`) → **UNKNOWN**.\nTRUE=1, UNKNOWN=½, FALSE=0: **AND = min, OR = max, NOT = 1−v**. WHERE/HAVING keep row only if **TRUE**.\n\n| | T | U | F |\n|---|---|---|---|\n| U AND · | U | U | F |\n| U OR · | T | U | U |\n\n`x>1990 OR x<=1990` **skips NULL rows** → add `OR x IS NULL`. Test only with `IS NULL / IS NOT NULL`.\n`x NOT IN (…NULL…)` is never TRUE ⚠.\n\n> [!ok] Quiz: rows (1,NULL,red),(2,200,NULL),(3,NULL,NULL); `WHERE price>100 OR color<>'green'` → **1, 2** (row 3: U OR U = U). `WHERE price<>100` never returns NULL-price rows ✓ True.\n\n> [!ok] Ex: A=1,B=NULL,C=NULL: `A>0 AND (B<5 OR NOT C=3)` = min(1, max(½,½)) = ½ → not returned.\nNULL ≠ `''`: `'a'||''`='a', `'a'||NULL`=NULL. `IS NULL` is the only comparison that is never UNKNOWN. A row with NULLs can still pass (T AND (U OR T) = T). Exception: GROUP BY / DISTINCT put all NULLs in **one** group. ORDER BY: SQLite puts NULLs first in ASC.",
+   "style": {
+    "accent": "#8b2e2e"
+   }
+  },
+  {
+   "id": "joins",
+   "type": "text",
+   "page": 1,
+   "md": "## 9 · Inner / outer joins\n`R [INNER] JOIN S ON R.B=S.B` ≡ comma join + WHERE; `SELECT *` keeps **both** R.B and S.B columns. **LEFT OUTER**: keep every R row, pad S attrs with NULL · **RIGHT**: every S row · **FULL**: both.\nR(A,B) = a2 a5 b5 c6 · S(B,C) = 2·100 3·200 5·300 7·400; SELECT R.A, R.B, S.C … ON R.B=S.B:\n\n| join | rows |\n|---|---|\n| INNER | a2 100 · a5 300 · b5 300 |\n| LEFT | inner + **c 6 NULL** |\n| RIGHT | inner + **NULL 3 200 · NULL 7 400** |\n| FULL | inner + all three extras |\n\nMax city per country **incl. countries with no city**:\n```\nSELECT C.Name, MAX(T.Population)\nFROM Country C\n  LEFT OUTER JOIN City T\n  ON C.Code = T.CountryCode\nGROUP BY C.Name;  -- no city: MAX=NULL\n```\nCounting after outer join: `COUNT(T.ID)` → 0, `COUNT(*)` → 1 ⚠.",
+   "style": {
+    "accent": "#8b2e2e"
+   }
+  },
+  {
+   "id": "hw1",
+   "type": "text",
+   "page": 1,
+   "md": "## 10 · HW1 / activity patterns\n**Matrices** A(i,j,val), B(i,j,val):\n```\n-- A + B\nSELECT A.i, A.j, A.val + B.val\nFROM A, B WHERE A.i=B.i AND A.j=B.j;\n-- A · B (row i of A · col j of B)\nSELECT A.i, B.j, SUM(A.val * B.val)\nFROM A, B WHERE A.j = B.i\nGROUP BY A.i, B.j;\n-- dot(1st col of A, 2nd col of B)\n-- HW1 indexes are 0-based!\nSELECT SUM(A.val*B.val) FROM A, B\nWHERE A.i=B.i AND A.j=0 AND B.j=1;\n-- yes/no row: ∀ agree ⇔ ¬∃ differ\nSELECT CASE WHEN NOT EXISTS (\n  SELECT * FROM A X, A Y\n  WHERE X.i = Y.j AND X.j = Y.i\n    AND X.val <> Y.val)\n THEN 'TRUE' ELSE 'FALSE'\n END AS IsSymmetric;\n```\nCommutative AB=BA: same pattern, compare two product subqueries (WITH) on (i,j).\n**Pivot** (rows → columns) with CASE inside AVG (no ELSE → NULL, ignored):\n```\nSELECT Type,\n ROUND(AVG(CASE\n   WHEN substr(WeekDate,6,2)\n        IN ('12','01','02')\n   THEN WeeklySales END), 2) AS Winter,\n …\nFROM Sales S, Stores T\nWHERE S.Store = T.Store\nGROUP BY Type;\n```\n**Graphs** Edge(source, target, d):\n```\n-- out-degree\nSELECT source, COUNT(target)\nFROM Edge GROUP BY source;\n-- 2-hop paths + distance\nSELECT e1.source, e2.target,\n       e1.d + e2.d\nFROM Edge e1, Edge e2\nWHERE e1.target = e2.source;\n```\nEdge has **no PK** (multigraph) → joins are self-joins; path of length k = k copies chained `ei.target=ej.source`. WITH RECURSIVE needs a stop condition. Streets stored twice (A→B and B→A): drop mirror pairs with `A<B`; ≤3 hops = UNION of 1-, 2-, 3-hop joins; triangle = 3-way self-join closing back, nodes pairwise `<>`.\n**Window fn:** `row_number() OVER (ORDER BY A)`. Consecutive runs: GROUP BY `A - row_number()`, then MIN, MAX, COUNT(*). Median (odd n): row where `2*rn = n+1`.\n**Recursion:**\n```\nWITH RECURSIVE cnt(x) AS (\n  VALUES(1) UNION ALL\n  SELECT x+1 FROM cnt WHERE x < 4)\nSELECT x FROM cnt;     -- 1 2 3 4\n```",
+   "style": {
+    "accent": "#136f74"
+   }
+  },
+  {
+   "id": "bar2",
+   "type": "text",
+   "page": 2,
+   "md": "<div class=\"pagebar\"><b>CS 564 · Midterm 1</b><span>Page 2</span><span>E/R Model · ER→Relational · Functional Dependencies · Decomposition · BCNF</span><span>Lectures 6–8</span></div>",
+   "span": "all",
+   "style": {
+    "card": false
+   }
+  },
+  {
+   "id": "router2",
+   "type": "text",
+   "page": 2,
+   "md": "<div class=\"router\"><span>\"is X→Y implied?\" → is Y ⊆ X⁺</span><span>\"superkey?\" → X⁺ = all attrs</span><span>\"key?\" → superkey + no proper subset is</span><span>\"in BCNF?\" → every nontrivial X→Y: X superkey</span><span>\"lossless?\" → chase (2 parts: R1∩R2 → R1 or R2)</span><span>\"dep. preserving?\" → closure of ∪Fᵢ implies F</span></div>",
+   "span": "all",
+   "style": {
+    "card": false
+   }
+  },
+  {
+   "id": "er",
+   "type": "text",
+   "page": 2,
+   "md": "## 11 · E/R model (Chen 1976)\nBuild app: requirements → **ER diagram** → relational schema → **normalize** → implement.\n**Entity** = distinguishable object; **entity set** = □ rectangle; **attribute** = ◯ oval (key **underlined**); **relationship** = ◇ diamond, mathematically $R\\subseteq A\\times B$ (a **set**: each (a,b) pair at most once).\n#### Multiplicity\nArrow points to the **\"one\"** side = \"at most one\":\n\n| | drawing | meaning |\n|---|---|---|\n| many-many | A — ◇ — B | no arrows |\n| many-one | A — ◇ → B | each A ↦ ≤1 B (Product makes→ Company) |\n| one-one | A ← ◇ → B | both directions ≤1 |\n| exactly one | A — ◇ —) B | rounded arrow: **referential integrity** (=1, must exist) |\n\n#### Multi-way · roles · ISA · weak\n**Multi-way:** arrow to E ⇒ the **other** entities together determine ≤1 E. Product—purchase→Store, Person: (person,product) → ≤1 store. Two arrows: also (store,person) → ≤1 product. \"Person buys from ≤1 store\" **not expressible** (approx. only).\n**Roles:** same entity set twice → label edges (buyer, salesperson), draw set once. **Relationship attributes** (date on purchase) allowed.\n**Multi-way → binary:** make relationship an entity set (Purchase) with **many-one** arrows to each participant (productOf→, storeOf→, buyerOf→).\n**ISA** △ subclass: specialized, fewer entities, more attrs; **inherits** attrs (+ key).\n**Weak entity set** (double □, supporting rel. double ◇, rounded arrow to owner): key = own partial key (number) + owner key (University.name).\n#### Fine print (lectures)\n**Arrows** (each arrow = separate constraint, ANDed); notation = slides (◇→ at \"one\" side), not cow book. Individual entities not drawn. Roles: salesperson edge may carry arrow (≤1 per purchase), buyer edge none.\n3 binary rels ≠ 1 ternary (lose which product at which store). Ternary → Purchase entity is only an approximation (arrows = ≤1); keeping ternary is fine.\n**Keys in ER:** every entity set **exactly one** key (diagram wrong without); several underlined attrs = **one composite** key; no natural key → add ID; ≥1 attribute. Attributes single-valued, carry no arrows → multi-valued (phones) = new entity set + relationship.\n**ISA** must be a **tree** (no 2 superclasses); triangle top = superclass.\n**Weak:** supporting rel. must be **binary + exactly one** (rounded): 0 or 2 owners ⇒ no unique key.\nOver-constrained: arrow Buys→Product = person buys ≤1 product ❌.",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "cons",
+   "type": "text",
+   "page": 2,
+   "md": "#### Constraints (find as many as possible)\n**Key** (ssn identifies person; every entity set needs one; ≥1 attr; several possible, 1 primary — no formal multi-key notation) · **single-value** (≤1 father; attribute or many-one) · **referential integrity** (works-for company must exist) · **domain** (0≤age≤150) · **other** (≤80 enrolled).\nWhy: semantics, prevent bad data, refer to entities, efficient storage/lookup.\n#### Design principles\n① **Faithful** (❌ purchase→Product arrow = person buys ≤1 product, should be many-many; ❌ Country—president—Person no arrows, should be one-one) ② **Avoid redundancy** (❌ personName/personAddress as purchase attrs → make Person entity; ❌ Beer.manufacturer attr *and* manfBy→Manufacturer(name, address) → drop attr) → wasted space, inconsistency ③ **Keep it simple** (❌ Date entity on purchase → `date` attribute) ④ **Attributes over entity sets**: entity set only if it has a non-key attr **or** is the \"many\" side of many-one/many-many (❌ Beer→Manufacturer(name) only → `manf` attr of Beer; with address or many-many → keep entity) ⑤ **Don't overuse weak entities** — create IDs (SSN, ISBN).\n\n> [!ok] Quiz 7 Person(ssn, first, last, dob) + **multiple phones** → **2 entity sets + 1 binary rel.** (Person —hasPhone— PhoneNumber(number)).",
+   "style": {
+    "accent": "#1f4e79"
+   },
+   "gap": 0
+  },
+  {
+   "id": "erdiag",
+   "type": "excalidraw",
+   "page": 2,
+   "gap": 0.3,
+   "style": {
+    "fontSize": 2.4
+   },
+   "elements": [
+    {
+     "type": "ellipse",
+     "id": "a1",
+     "x": 0,
+     "y": 0,
+     "width": 110,
+     "height": 44,
+     "label": {
+      "text": "price"
+     }
+    },
+    {
+     "type": "ellipse",
+     "id": "a2",
+     "x": 120,
+     "y": 0,
+     "width": 110,
+     "height": 44,
+     "label": {
+      "text": "name"
+     }
+    },
+    {
+     "type": "line",
+     "x": 152,
+     "y": 33,
+     "width": 46,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       46,
+       0
+      ]
+     ],
+     "strokeWidth": 1
+    },
+    {
+     "type": "rectangle",
+     "id": "p",
+     "x": 50,
+     "y": 80,
+     "width": 130,
+     "height": 48,
+     "label": {
+      "text": "Product"
+     }
+    },
+    {
+     "type": "line",
+     "x": 55,
+     "y": 44,
+     "width": 45,
+     "height": 36,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       45,
+       36
+      ]
+     ]
+    },
+    {
+     "type": "line",
+     "x": 175,
+     "y": 44,
+     "width": 40,
+     "height": 36,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       -40,
+       36
+      ]
+     ]
+    },
+    {
+     "type": "diamond",
+     "id": "mk",
+     "x": 235,
+     "y": 69,
+     "width": 150,
+     "height": 70,
+     "label": {
+      "text": "makes"
+     }
+    },
+    {
+     "type": "arrow",
+     "x": 180,
+     "y": 104,
+     "width": 55,
+     "height": 0,
+     "endArrowhead": null,
+     "start": {
+      "id": "p"
+     },
+     "end": {
+      "id": "mk"
+     }
+    },
+    {
+     "type": "rectangle",
+     "id": "c",
+     "x": 440,
+     "y": 80,
+     "width": 150,
+     "height": 48,
+     "label": {
+      "text": "Company"
+     }
+    },
+    {
+     "type": "arrow",
+     "x": 385,
+     "y": 104,
+     "width": 55,
+     "height": 0,
+     "start": {
+      "id": "mk"
+     },
+     "end": {
+      "id": "c"
+     }
+    },
+    {
+     "type": "text",
+     "x": 250,
+     "y": 8,
+     "text": "underline = key · → : ≤1 company per product"
+    },
+    {
+     "type": "rectangle",
+     "id": "t0",
+     "x": 46,
+     "y": 186,
+     "width": 138,
+     "height": 56
+    },
+    {
+     "type": "rectangle",
+     "id": "t",
+     "x": 50,
+     "y": 190,
+     "width": 130,
+     "height": 48,
+     "label": {
+      "text": "Team"
+     }
+    },
+    {
+     "type": "diamond",
+     "id": "af0",
+     "x": 228,
+     "y": 174,
+     "width": 164,
+     "height": 80
+    },
+    {
+     "type": "diamond",
+     "id": "af",
+     "x": 235,
+     "y": 179,
+     "width": 150,
+     "height": 70,
+     "label": {
+      "text": "affil."
+     }
+    },
+    {
+     "type": "line",
+     "x": 184,
+     "y": 214,
+     "width": 44,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       44,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "line",
+     "x": 392,
+     "y": 214,
+     "width": 40,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       40,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "x": 424,
+     "y": 192,
+     "text": ")",
+     "fontSize": 36
+    },
+    {
+     "type": "rectangle",
+     "id": "u",
+     "x": 440,
+     "y": 190,
+     "width": 150,
+     "height": 48,
+     "label": {
+      "text": "University"
+     }
+    },
+    {
+     "type": "text",
+     "x": 300,
+     "y": 146,
+     "text": ") : exactly one (ref. integrity)"
+    },
+    {
+     "type": "text",
+     "x": 0,
+     "y": 258,
+     "text": "weak = double □ / ◇; key = number + University.name"
+    },
+    {
+     "type": "rectangle",
+     "id": "p2",
+     "x": 50,
+     "y": 310,
+     "width": 130,
+     "height": 48,
+     "label": {
+      "text": "Product"
+     }
+    },
+    {
+     "type": "line",
+     "x": 180,
+     "y": 334,
+     "width": 70,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       70,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "line",
+     "x": 250,
+     "y": 334,
+     "width": 64,
+     "height": 72,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       64,
+       -36
+      ],
+      [
+       64,
+       36
+      ],
+      [
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "x": 268,
+     "y": 323,
+     "text": "ISA"
+    },
+    {
+     "type": "line",
+     "x": 314,
+     "y": 334,
+     "width": 46,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       46,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "rectangle",
+     "id": "sw",
+     "x": 360,
+     "y": 310,
+     "width": 230,
+     "height": 48,
+     "label": {
+      "text": "SoftwareProduct"
+     }
+    },
+    {
+     "type": "ellipse",
+     "id": "v",
+     "x": 415,
+     "y": 388,
+     "width": 120,
+     "height": 40,
+     "label": {
+      "text": "version"
+     }
+    },
+    {
+     "type": "line",
+     "x": 475,
+     "y": 358,
+     "width": 0,
+     "height": 30,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       30
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "x": 0,
+     "y": 392,
+     "text": "ISA: subclass inherits key + attrs"
+    },
+    {
+     "type": "rectangle",
+     "id": "pe",
+     "x": 50,
+     "y": 470,
+     "width": 130,
+     "height": 48,
+     "label": {
+      "text": "Person"
+     }
+    },
+    {
+     "type": "diamond",
+     "id": "pu",
+     "x": 200,
+     "y": 454,
+     "width": 220,
+     "height": 80,
+     "label": {
+      "text": "purchase"
+     }
+    },
+    {
+     "type": "line",
+     "x": 180,
+     "y": 494,
+     "width": 20,
+     "height": 0,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       20,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "rectangle",
+     "id": "st",
+     "x": 440,
+     "y": 470,
+     "width": 150,
+     "height": 48,
+     "label": {
+      "text": "Store"
+     }
+    },
+    {
+     "type": "arrow",
+     "x": 420,
+     "y": 494,
+     "width": 20,
+     "height": 0,
+     "start": {
+      "id": "pu"
+     },
+     "end": {
+      "id": "st"
+     }
+    },
+    {
+     "type": "rectangle",
+     "id": "pr",
+     "x": 245,
+     "y": 565,
+     "width": 130,
+     "height": 48,
+     "label": {
+      "text": "Product"
+     }
+    },
+    {
+     "type": "line",
+     "x": 310,
+     "y": 534,
+     "width": 0,
+     "height": 31,
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       31
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "x": 0,
+     "y": 625,
+     "text": "ternary: arrow into Store ⇒ (person, product) → ≤1 store"
+    }
+   ]
+  },
+  {
+   "id": "er2rel",
+   "type": "text",
+   "page": 2,
+   "md": "## 12 · ER → relational\n| ER | relation |\n|---|---|\n| entity set E | E(attrs), PK = E's key |\n| relationship R (many-many) | R(keys of all participants + R's attrs); PK = union of keys; FKs to each |\n| many-one A→B | **no table**: add B's key (+R attrs) to A |\n| one-one | fold into either side |\n| weak entity W | W(own attrs + owner key); supporting rel. → **no table** |\n| ISA | ① table per class, **all** attrs ② subclass = key + own attrs ③ one table, NULLs for N/A |\n\n```\nPerson(ssn, name, address)\nProduct(name, category, price)\nBuys(prodname, prodcategory, ssn, date)\n  PRIMARY KEY(prodname, prodcategory,\n              ssn),\n  FOREIGN KEY(ssn) REFERENCES Person,\n  FOREIGN KEY(prodname, prodcategory)\n    REFERENCES Product(name, category)\n-- many-one \"makes\" folded in:\nProduct(name, category, price,\n        company_name)\n-- weak entity:\nTeam(number, affiliatedUniversity,\n     sport)\n```\n❌ putting `ssn` into Product for many-many Buys (1 buyer per product, redundancy).\nISA (slides: Product key = name): ① SoftwareProduct(name, category, price, version) — redundant ② **keep** Product(name, category, price) + SoftwareProduct(name, version), EducationalProduct(name, age_group); subclass key = FK to Product — no redundancy, join for inherited attrs ③ Product(name, category, price, version, age_group) — NULLs waste space, can't forbid both, NULL ambiguous.\nMany-one fold also moves R's attrs into the many side.\n\n> [!ok] Handout: Doctor(id, name, age) — Appts(date, time) — Patient(SSN, name, insurance), no arrows → Doctor, Patient, **Appts(id, SSN, date, time)** PK(id, SSN), FKs. Gotcha: relationship = set ⇒ ≤1 appt per pair; repeats → add date/time to key or Appointment entity. **Quiz 8:** 3 tables · Doctor 3 attrs · Appts 4 attrs · 2 FKs.",
+   "style": {
+    "accent": "#136f74"
+   }
+  },
+  {
+   "id": "fd",
+   "type": "text",
+   "page": 2,
+   "md": "## 13 · Functional dependencies\n$A_1..A_n\\to B_1..B_m$: any 2 tuples agreeing on all $A$'s agree on all $B$'s. Generalizes keys. **Domain knowledge** — instance can only **refute** (2 rows same A, diff B) or \"seem valid\", never prove.\n**Split right OK:** $AB\\to CD\\iff AB\\to C,\\ AB\\to D$. **Never split left:** $AB\\to C\\not\\Rightarrow A\\to C$.\n#### Armstrong & closure\n**Trivial:** $X\\to A$ with $A\\in X$ (always holds).\n**Armstrong** (sound + complete for $F^+$): **Reflexivity** $Y\\subseteq X\\Rightarrow X\\to Y$ · **Augmentation** $X\\to Y\\Rightarrow XZ\\to YZ$ · **Transitivity** $X\\to Y, Y\\to Z\\Rightarrow X\\to Z$. (Derived, not axioms: union, decomposition/split, pseudo-trans.)\n> Proof $name\\to color$, $color\\,category\\to price$ ⊢ $name\\,category\\to price$: aug. by category → $name\\,cat\\to color\\,cat$; trans. → $price$. ⊢ $name\\,cat\\to color$: refl. $name\\,cat\\to name$ + trans.\n\n**$F^+$** = all FDs implied by F. **$X^+$** = all attrs B with $X\\to B$.\n**Closure algorithm:** X ← attrs; repeat until no change: if $B_1..B_m\\to C$ and all $B_i\\in X$, add C.\nEx R(ABCDEF): $AB\\to C, AD\\to E, B\\to D, AF\\to B$. $\\{A,B\\}^+$: AB →C →D (B→D) →E (AD→E) = **ABCDE**. $\\{A,F\\}^+$ = AF→B→C→D→E = **all** ⇒ AF superkey.\nUses: $X\\to Y$ holds ⇔ $Y\\subseteq X^+$. $F^+$: for each X, for each $Y\\subseteq X^+$, output $X\\to Y$.\n#### Lecture examples\nReading FDs (studentID, semester, course, section, instructor): course, section → instructor ✓; course → instructor ✗ (2 sections); instructor, course → section = instructor teaches ≤1 section of a course; instructor → course = ≤1 course. Never flip sides.\nLecture Product(name, category, color, department, price): $name\\to color$, $category\\to department$, $color\\,category\\to price$ ⇒ $name^+$={name,color} (name→department ✗), {name,category}⁺ = all = only key. Instance: Gizmo in Toys and Office ⇒ name→department refuted; name,category→department \"don't know\".\nComputing $F^+$ over all subsets = exponential; use closures.",
+   "style": {
+    "accent": "#6b3e8b"
+   }
+  },
+  {
+   "id": "keys",
+   "type": "text",
+   "page": 2,
+   "md": "## 14 · Keys & superkeys\n**Superkey**: $X^+$ = all attrs. **Key (candidate)**: minimal superkey — no proper subset is a superkey (check only one-smaller subsets). PK chosen among candidate keys (not just any superkey). Many keys possible: R(ABC), $AB\\to C$, $AC\\to B$ ⇒ keys AB, AC.\n**Fast key search:** attrs never on any RHS ∈ **every** key; attrs only on RHS ∈ **no** key; start from the must-haves, take closure, add attrs as needed.\n\n> [!ok] Quiz 9 R(ABCDEF), $A\\to D, A\\to E, D\\to C, D\\to F$: B never on RHS ⇒ in every key. $\\{A,B\\}^+$=all. Superkeys: **AB, ABC** (not A, not BDE). Key: **AB**. $A\\to EF$ implied ✓ ($A^+$=ADECF).\nProduct(name,category,price,color), $name\\to color$, $color\\,category\\to price$: only key **{name, category}**; superkeys = its supersets.\n\n> [!info] Exam asks \"is X a key / superkey?\", not \"list all keys\". Quiz 9: $B^+=B$ ⇒ AB minimal; BDE not superkey (A on no RHS).",
+   "style": {
+    "accent": "#6b3e8b"
+   }
+  },
+  {
+   "id": "decomp",
+   "type": "text",
+   "page": 2,
+   "md": "## 15 · Decomposition\nBad schema (SSN,name,age,phone; key SSN+phone): redundancy + **update / insert / delete anomalies**. Fix: split R into $R_1,R_2$ with attrs union = R; instance $R_i=\\pi_{R_i}(R)$.\n#### Lossless join (chase)\n**Desiderata:** ① min redundancy ② **lossless-join** ③ **dependency preserving** ④ query performance.\n**Lossless-join:** $R_1\\bowtie R_2 = R$ (natural join) for every instance satisfying F. (Join never loses rows — lossy = **extra** spurious rows.) ❌ R(name,age,phone)→(name,age),(age,phone).\n**Chase test:** one row per $R_i$: attr in $R_i$ → plain (a), else subscripted with the row number ($b_1$ in row 1). Repeat: for violated FD, equalize RHS (plain wins; else same subscript). Lossless ⇔ some row all plain.\n\n| R(ABCDE): $A\\to BC$, $D\\to E$ | A | B | C | D | E |\n|---|---|---|---|---|---|\n| R1(A,D) | a | b₁→**b** | c₁→**c** | d | e₁→**e** |\n| R2(A,B,C) | a | b | c | d₂ | e₂ |\n| R3(D,E) | a₃ | b₃ | c₃ | d | e |\n\n$D\\to E$ fixes row1 E; $A\\to BC$ fixes row1 B,C ⇒ row1 plain ⇒ **lossless** ✓.\n**2-way shortcut:** $\\{R_1,R_2\\}$ lossless ⇔ $(R_1\\cap R_2)\\to R_1$ or $\\to R_2$ (common attrs superkey of one side). No common attrs ⇒ lossy (cross product).\n#### Dependency preservation\n**Dependency preserving:** enforce $F_i$ on each $R_i$ ⇒ F enforced. $F_i$ = **nontrivial FDs of $F^+$** using only $R_i$ attrs (not just F's). R(ABC), $A\\to B, B\\to C$: R1(A,C) gets $A\\to C$. Check: each FD in F follows from $\\cup F_i$ (closure using only $F_i$).\n❌ R(ABC), $A\\to B$, $BC\\to A$ → (A,B),(A,C): $BC\\to A$ lost; rejoin (a1 b c),(a2 b c) violates it.\n**Stop** the chase as soon as **one** row is all plain. R(ABCD), $A\\to BC$: (ABC, AD) lossless; (ABC, D) lossy.\n\n> [!warn] Lossless-join is **never optional**; losing an FD is acceptable (just a constraint, not data).",
+   "style": {
+    "accent": "#a8610a"
+   }
+  },
+  {
+   "id": "bcnf",
+   "type": "text",
+   "page": 2,
+   "md": "## 16 · BCNF\n> **R in BCNF ⇔ every nontrivial $X\\to B$ has X a superkey.** Equiv.: every X has $X^+=X$ **or** $X^+$ = all attrs.\n\nNormal forms: 1NF (atomic) ⊃ 2NF ⊃ 3NF ⊃ **BCNF** ⊃ 4NF (more restrictive →). **Any 2-attr relation is BCNF.**\n**Check:** for each FD (and implied ones on sub-relations!) compute $X^+$; $X\\subsetneq X^+\\neq$ all ⇒ violation.\n**Decompose:** pick violating $X\\to Y$ **exactly as given** (prof's rule; don't expand to $X^+$): $R_1 = X\\cup Y$, $R_2 = X\\cup(R\\setminus Y)$. Project FDs (via closure: e.g. R(ABCD), $A\\to B$, $B\\to C$, split AB + ACD ⇒ ACD inherits $A\\to C$ from $A^+$), recurse until all BCNF. Choice of FD changes result (and dep.-preservation).\nProperties: removes redundancy · **always lossless** ($X=R_1\\cap R_2$ is key of $R_1$) · **not always dep.-preserving** (may be impossible: R(ABC), $A\\to B$, $BC\\to A$ → (AB),(AC)). Result not unique — any order/split of RHS valid (Piazza).\n\n> [!ok] Books(author, gender, booktitle, genre, price): $author\\to gender$, $booktitle\\to genre\\,price$. Key {author, booktitle} ⇒ not BCNF. Split on author → **Author(author, gender)** + Books2(author, booktitle, genre, price); split on booktitle → **BookInfo(booktitle, genre, price)** + **BookAuthor(author, booktitle)**.\n\n> [!ok] Person(SSN,name,age,phone), $SSN\\to name\\,age$ → (SSN,name,age) + (SSN,phone).\n\n> [!ok] Person(SSN,name,age,canDrink), $SSN\\to name\\,age$, $age\\to canDrink$ → (SSN,name,age)+(age,canDrink): lossless + preserving.\n\nNormalization not always good: attrs always used together (join cost), data warehouses (rarely updated).\nRepeated key column across tables ≠ redundancy (bounded); author's gender repeated per book = redundancy.\n\n> [!ok] Extra quiz R(RID, PID, FName, LName, AgentID, AgentName, RDate): $PID\\to FName\\,LName$, $AgentID\\to AgentName$, $RID\\to PID\\,AgentID\\,RDate$; key RID. ✓ Passenger(PID, FName, LName) + Agent(AgentID, AgentName) + Reservation(RID, PID, AgentID, RDate). ❌ AgentName left in Reservation (AgentID→AgentName violates). ❌ Reservation without PID/AgentID (LHS must stay; lossy). Superkeys: **rid**, **rid+rdate** (rid on no RHS ⇒ every superkey has it). Implied: rid → p_fname, agent_name ✓ · pid, agent_id → agent_name ✓ · agent_id, rdate → rid ✗ · pid → p_fname, rdate ✗.",
+   "style": {
+    "accent": "#8b2e2e"
+   }
+  },
+  {
+   "id": "q10",
+   "type": "text",
+   "page": 2,
+   "md": "## 17 · Worked: Quiz 10\nR(ABCDE): $A\\to BC$, $B\\to C$, $C\\to A$, $D\\to E$, $E\\to D$. A,B,C mutually determine (cycle); D⇔E.\n$A^+ = ABC$ ≠ all ⇒ **not BCNF**. Keys: one of {A,B,C} × one of {D,E} → AD, AE, BD, BE, CD, CE.\n**Dep. preserving — all ✓:** ABCD,DE (all FDs local) · AB,BCDE ($A\\to B, B\\to A$ in AB; $B\\to C, C\\to B, D\\leftrightarrow E$ in BCDE ⇒ $C\\to B\\to A$) · ABC,CD,DE (CD has none needed).\n**Lossless:** ABC,DE ✗ (no shared attr) · ABC,CDE ✓ ($C^+\\supseteq ABC$) · ABCD,CDE ✓ ($CD$ = key).\n**BCNF of R** (class): $D\\to E$ → DE + ABCD; $B\\to C$ → BC + ABD; $A\\to B$ → AB + AD ⇒ **{DE, BC, AB, AD}** (via $B\\to A$: AB, BD). Using $A\\to BC$ on ABCD → ABC + AD ⇒ **{DE, ABC, AD}**: lossless **and** preserving (A, B, C each key of ABC).",
+   "style": {
+    "accent": "#a8610a"
+   }
+  },
+  {
+   "id": "traps2",
+   "type": "text",
+   "page": 2,
+   "md": "## ⚠ Design traps\n- arrow points **at** the \"one\" side; rounded = exactly one\n- ER relationship = **set** of pairs: same (person, product) can't be bought twice → use entity set Purchase\n- left side of FD can't be split; right side can\n- key = **minimal**; superkey ⊇ key; PK ∈ candidate keys\n- project FDs from $F^+$, not F, when checking sub-relations\n- BCNF ⇒ lossless always; dependency preservation **not** guaranteed\n- any 2-attribute relation is in BCNF\n- lossy join = **more** tuples, not fewer\n- instance can disprove an FD, never prove one",
+   "style": {
+    "accent": "#8b2e2e"
+   }
+  },
+  {
+   "id": "intro",
+   "type": "text",
+   "page": 2,
+   "md": "## ★ Exam & intro facts\nFormat: MC · T/F · fill-in · short SQL (\"not 50 lines\"); quizzes come from past exams. 75 min, 23%, not cumulative.\n**DB** = organized collection of structured data; **DBMS** = program to manage large DB efficiently + persist it (SQL Server, Oracle, MySQL, PostgreSQL, SQLite, DuckDB). Why not files: fast lookup, concurrent writes, crash recovery, valid values. DBMS: automates ops, fast retrieval, scales, safe concurrency, crash protection.\n**Data model** = concepts for describing data: relational (Codd 1969), key/value, graph, document/JSON, array/tensor, E/R. SQL = declarative (what, not how); standards SQL-92/1999/2011.",
+   "style": {
+    "accent": "#1f4e79"
+   }
+  },
+  {
+   "id": "traps1",
+   "type": "text",
+   "page": 2,
+   "md": "## ⚠ SQL traps\n- `SELECT` non-grouped attr ❌ · agg in WHERE ❌ (use HAVING) · HAVING on raw attr ❌\n- joins multiply rows → `DISTINCT` / `COUNT(DISTINCT …)`\n- `NOT IN` + NULL in subquery → empty; comparisons to NULL → UNKNOWN\n- `LIMIT 1` loses ties; integer division; `'single'` quotes\n- DISTINCT applies to whole row, not one column\n- UNION/INTERSECT/EXCEPT dedup; `ALL` keeps bags\n- correlated = references outer var, not just \"is nested\"",
+   "style": {
+    "accent": "#8b2e2e"
+   }
+  },
+  {
+   "id": "recipe",
+   "type": "text",
+   "page": 2,
+   "md": "## ✎ Writing a query\n① **FROM** tables, alias each; one copy per role (self-join) ② **WHERE** join conds (n tables → n−1) + row filters ③ \"per X\" → **GROUP BY** X; group conds → **HAVING** ④ **SELECT** only grouped attrs/aggs; **DISTINCT** if joins can dup ⑤ ∀ → NOT EXISTS; argmax → `= (SELECT MAX…)` ⑥ ORDER BY / LIMIT last. Sanity: run on a tiny instance incl. NULLs, ties, empty groups.",
+   "style": {
+    "accent": "#136f74"
+   }
+  }
+ ]
+}

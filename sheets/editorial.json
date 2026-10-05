@@ -1,0 +1,114 @@
+{
+  "page": {
+    "size": "letter",
+    "margin": 4,
+    "count": 1,
+    "fill": true
+  },
+  "theme": "editorial",
+  "defaults": {
+    "fontSize": 3,
+    "lineHeight": 1.2,
+    "style": {
+      "card": true
+    }
+  },
+  "guides": {
+    "columns": 3,
+    "gutter": 2
+  },
+  "elements": [
+    {
+      "id": "bar",
+      "type": "text",
+      "md": "<div class=\"pagebar\"><b>STAT 240 · Final Exam Concepts</b><span>Page 1</span><span>Choose method + inference workflow</span><span>Page 1 of 4</span></div>",
+      "span": "all",
+      "style": {
+        "card": false
+      }
+    },
+    {
+      "id": "router",
+      "type": "text",
+      "md": "<div class=\"router\"><span>Binary? → proportion</span><span>Numeric? → mean</span><span>Count successes? → binomial</span><span>Same people twice? → paired</span><span>2 groups? → 2-sample</span><span>Predict? → regression</span></div>",
+      "span": "all",
+      "style": {
+        "card": false,
+        "accent": "#1f4e79"
+      }
+    },
+    {
+      "id": "choose",
+      "type": "text",
+      "md": "| Data / question | Parameter | Estimate | Reference distribution & page |\n|---|---|---|---|\n| One binary population | $p$ | $\\hat p = x/n$ | Binomial or Z/normal **[Pg 2]** |\n| Two binary groups | $p_1-p_2$ | $\\hat p_1-\\hat p_2$ | Z/normal **[Pg 2]** |\n| One numeric population | $\\mu$ | $\\bar x$ | T (df = n−1) **[Pg 2]** |\n| Two independent numeric groups | $\\mu_1-\\mu_2$ | $\\bar x_1-\\bar x_2$ | Welch or pooled T **[Pg 2]** |\n| Paired numeric measurements | $\\mu_d$ | $\\bar d$ | One-sample T **[Pg 2]** |\n| Linear relationship | $\\beta_1$ | $b_1$ | T (df = n−2) **[Pg 3]** |",
+      "span": "all",
+      "style": {
+        "card": false
+      }
+    },
+    {
+      "id": "universal",
+      "type": "text",
+      "md": "## ① Run test/CI — universal structure\n> Confidence interval: estimate ± critical value · SE\n\n> Hypothesis test stat: (estimate − null value) / SE\n\n✓ P-value is computed under the null distribution, using the tail direction from Hₐ.\n✓ Small p-value means the observed statistic is unlikely if H₀ were true; it is not the probability that H₀ is true.\n✓ **CI/Test agreement:** reject H₀ iff null is outside the (1−α) CI. 95% CI ⇔ 2-sided α=0.05",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "tail",
+      "type": "text",
+      "md": "## ⊕ P-value tail logic\n> [!warn] Hₐ: > (upper) → P(T > t_obs) | `1-pnorm` or `1-pt`\nHₐ: < (lower) → P(T < t_obs) | `pnorm` or `pt`\nHₐ: ≠ → 2·P(T > |t_obs|)\n\n✓ If t_obs contradicts Hₐ (e.g. t < 0 for Hₐ: >), p-value > 0.5.\n*Ex:* Hₐ: > but t = −1.5 → P = 1 − pt(−1.5, df) = 0.93.",
+      "style": {
+        "accent": "#6b3e8b"
+      }
+    },
+    {
+      "id": "workflow",
+      "type": "text",
+      "md": "## ▷ Hypothesis test workflow\n1. Define the parameter in context.\n2. Write hypotheses about **population parameter, NOT statistic**.\n3. Identify the null distribution assuming H₀ true.\n4. Compute the test statistic & p-value.\n5. Compare p-value to α; conclude in context.\n\n#### Decision rule\n✓ If p-value < α, reject H₀.\n✓ If p-value ≥ α, fail to reject H₀ (do NOT say \"accept H₀\").\n✓ Smaller α makes it harder to reject H₀.\n\n#### Error types\n✓ **Type I:** reject a true null (false positive).\n✓ **Type II:** fail to reject a false null (false negative).\n✓ **Power** = 1 − Type II = chance of correctly rejecting a false null.",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "wording",
+      "type": "text",
+      "md": "## ⊕ Common exam wording\n- \"greater than\" → **upper-tail test**\n- \"less than\" → **lower-tail test**\n- \"different / changed\" → **two-sided test**\n- \"estimate average\" → **confidence interval**\n- \"predict one new\" → **prediction interval**\n- \"same subjects before/after\" → **paired t**\n- \"compare two groups\" → **two-sample**",
+      "style": {
+        "accent": "#6b3e8b"
+      }
+    },
+    {
+      "id": "templates",
+      "type": "text",
+      "md": "## ✎ Written templates\n| | Template |\n|---|---|\n| P-value | \"If H₀ true, prob of result as or more extreme than ours is ___.\" |\n| Sig | \"p < α → Reject H₀. Strong evidence [Hₐ].\" |\n| Not sig | \"p ≥ α → Fail to reject. No evidence [Hₐ].\" |\n| CI | \"We are C% confident true [param] is between L and U.\" |\n| CI ∋ 0 | \"Contains 0 → not significant at α.\" |\n| Cause | \"Association ≠ causation (observational study).\" |",
+      "style": {
+        "accent": "#a8610a"
+      }
+    },
+    {
+      "id": "reverse",
+      "type": "text",
+      "md": "## ⊕ Reverse engineer — templates\n#### From interval (L, U)\n> Point estimate = (L + U) / 2\n\n> Margin of error = (U − L) / 2\n\n#### From test statistic / MOE\n> estimate = null + test statistic · SE\n\n> SE = MOE / critical value\n\n#### From confidence level\n> Two-sided CI level C = 1 − α; upper critical percentile = 1 − α/2\n\n| CI | R code |\n|---|---|\n| 90% | `qnorm(0.95)` or `qt(0.95, df)` |\n| 95% | `qnorm(0.975)` or `qt(0.975, df)` |\n| 99% | `qnorm(0.995)` or `qt(0.995, df)` |",
+      "style": {
+        "accent": "#136f74"
+      }
+    },
+    {
+      "id": "transform",
+      "type": "text",
+      "md": "## ⊕ P-value transformations\nIf the reported one-sided p-value is for the same direction as your alternative, use it. Switching to the opposite one-sided alternative:\n> new one-sided p = 1 − original one-sided p\n\nSwitching from one-sided to two-sided:\n> two-sided p = 2 · min(orig one-sided p, opposite one-sided p)\n\n#### Test statistic direction rules\nIf the test statistic is **positive**: Hₐ: param > null → upper tail; Hₐ: param < null → lower tail (p > 0.5).",
+      "style": {
+        "accent": "#6b3e8b"
+      }
+    },
+    {
+      "id": "sanity",
+      "type": "text",
+      "md": "## ① Check answer — sanity check\n① Is your result inside the possible range?\n② Does your conclusion match the evidence?\n③ Did you answer the LAST sentence?\n④ If you doubled `n`, would it move correctly?\n\n> [!stop] If anything is wrong → stop · find the broken step · fix.",
+      "style": {
+        "accent": "#8b2e2e"
+      }
+    }
+  ]
+}

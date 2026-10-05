@@ -1,0 +1,263 @@
+{
+  "page": {
+    "size": "letter",
+    "margin": 4,
+    "count": 1,
+    "fill": true
+  },
+  "theme": "editorial",
+  "defaults": {
+    "fontSize": 3,
+    "lineHeight": 1.15,
+    "style": {
+      "card": true
+    }
+  },
+  "guides": {
+    "columns": 4,
+    "gutter": 1.6
+  },
+  "elements": [
+    {
+      "id": "bar1",
+      "type": "text",
+      "page": 1,
+      "md": "<div class=\"pagebar\"><b>CS 577 · Algorithms</b><span>Page 1</span><span>Analysis · Proofs · Graphs · Greedy · Divide &amp; Conquer</span><span>Weeks 1–5</span></div>",
+      "span": "all",
+      "style": {
+        "card": false
+      }
+    },
+    {
+      "id": "router1",
+      "type": "text",
+      "page": 1,
+      "md": "<div class=\"router\"><span>Count/compare growth → Asymptotics</span><span>aT(n/b)+f(n) → Master thm</span><span>Unequal splits / T(n−1) → tree · Akra–Bazzi</span><span>\"Prove greedy optimal\" → Stays ahead · Exchange</span><span>Reachability / components → BFS · DFS O(n+m)</span><span>Precedence / ordering → DAG · topo sort</span></div>",
+      "span": "all",
+      "style": {
+        "card": false
+      }
+    },
+    {
+      "id": "asym",
+      "type": "text",
+      "page": 1,
+      "md": "## ① Asymptotic notation\n| | means | definition |\n|---|---|---|\n| $O$ | $\\le$ | $\\exists c,n_0: 0\\le f\\le c\\,g\\ \\forall n\\ge n_0$ |\n| $\\Omega$ | $\\ge$ | $\\exists c,n_0: 0\\le c\\,g\\le f$ |\n| $\\Theta$ | $=$ | $O$ **and** $\\Omega$ |\n| $o$ | $<$ | $\\lim f/g=0$ |\n| $\\omega$ | $>$ | $\\lim f/g=\\infty$ |\n\n**Limit test** $L=\\lim f/g$: $0<L<\\infty\\Rightarrow\\Theta$; $L=0\\Rightarrow o$; $L=\\infty\\Rightarrow\\omega$.\n\n$1<\\log n<\\sqrt n<n<n\\log n<n^2<n^3<2^n<n!<n^n$\n- poly: leading term only, $\\sum c_in^i=O(n^d)$\n- $\\log_b n=\\Theta(\\log n)$ — base irrelevant **in Θ**, not in exponent\n- $(\\log n)^a=o(n^b)$; $n^d=o(r^n)$, $r>1$; $r^n=o(s^n)$, $r<s$\n- **Compare by rewriting as $2^{(\\cdot)}$:** $2^{\\log n}=n$, $n^{\\log n}=2^{\\log^2 n}$, $a^{\\log n}=n^{\\log a}$\n> [!warn] $f=O(g)\\not\\Rightarrow 2^f=O(2^g)$ ($4n$ vs $2n$: $4^n\\to\\infty$). But $f^2=O(g^2)$ ✓, $\\log f=O(\\log g)$ ✓ ($g\\ge2$).\n\n**Prove Θ of loops:** upper = loop bounds; lower = count an expensive chunk ($i\\le n/4,\\ j\\ge 3n/4$ ⇒ $\\ge n^3/32$).\n**Efficient** = polynomial in input size. Worst case default.",
+      "style": {
+        "accent": "#1f4e79"
+      }
+    },
+    {
+      "id": "sums",
+      "type": "text",
+      "page": 1,
+      "md": "#### Sums & logs\n$\\sum i=\\frac{n(n+1)}2$ · $\\sum i^2=\\frac{n(n+1)(2n+1)}6$ · $\\sum i^3=(\\sum i)^2$\n$\\sum_{0}^{n} r^i=\\frac{r^{n+1}-1}{r-1}$, $\\sum_0^n 2^i=2^{n+1}-1$\n$\\log ab=\\log a+\\log b$, $\\log a^k=k\\log a$, $a^{\\log_b n}=n^{\\log_b a}$",
+      "style": {
+        "accent": "#1f4e79"
+      },
+      "gap": 0
+    },
+    {
+      "id": "rec",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Recurrences\n**Unroll:** $2T(\\frac n2)+cn=2^kT(\\frac n{2^k})+kcn$, stop $k=\\lg n$ ⇒ $cn\\lg n+cn$.\n**Tree:** cost/level × #levels; depth $\\log_b n$, leaves $a^{\\log_b n}=n^{\\log_b a}$. Geometric: biggest term dominates (root ↓, leaves ↑).\n**Guess+induct:** same constant both sides; never \"$\\le O(\\cdot)$\" inside IH.\n> [!info] **Master** $T=aT(n/b)+f$, compare $f$ vs $n^{\\log_b a}$:\n> ① $f=O(n^{\\log_b a-\\epsilon})$ ⇒ $\\Theta(n^{\\log_b a})$ (leaves)\n> ② $f=\\Theta(n^{\\log_b a})$ ⇒ $\\Theta(n^{\\log_b a}\\log n)$\n> ③ $f=\\Omega(n^{\\log_b a+\\epsilon})$ & $af(n/b)\\le cf(n)$, $c<1$ ⇒ $\\Theta(f)$\n\n$aT(\\frac nb)+n^d$: $d>\\log_ba\\to n^d$; $=\\to n^d\\log n$; $<\\to n^{\\log_ba}$\n\n| recurrence | solution | e.g. |\n|---|---|---|\n| $T(\\frac n2)+1$ | $\\log n$ | binary search |\n| $T(\\frac n2)+n$ | $n$ | |\n| $2T(\\frac n2)+1$ | $n$ | tree traversal |\n| $2T(\\frac n2)+n$ | $n\\log n$ | mergesort, closest pair |\n| $3T(\\frac n2)+n$ | $n^{\\lg3}\\approx n^{1.59}$ | Karatsuba |\n| $4T(\\frac n2)+n$ | $n^2$ | naive mult |\n| $T(\\frac n5)+T(\\frac{7n}{10})+n$ | $n$ | median of medians |\n| $2T(\\frac n2)+n\\log n$ | $n\\log^2n$ | (no Master) |\n| $T(n-1)+n$ | $n^2$ | quickselect worst |\n| $T(n-1)+1$ | $n$ | |\n\n**Akra–Bazzi:** $\\sum a_iT(n/b_i)+f$: find $\\rho$ with $\\sum a_i b_i^{-\\rho}=1$; $T=\\Theta(n^\\rho(1+\\int_1^n \\frac{f(u)}{u^{\\rho+1}}du))$.\n> [!warn] Master fails on: unequal splits, $T(n-1)$, non-polynomial gaps ($n\\log n$ vs $n$), case ③ w/o regularity. $\\lg 3=\\log_2 3$, not $\\log_3 2$.",
+      "style": {
+        "accent": "#6b3e8b"
+      }
+    },
+    {
+      "id": "proofs",
+      "type": "text",
+      "page": 1,
+      "md": "## ✎ Proof templates\n**Induction:** ① state $P(n)$ ② base ③ IH: $P(k)$ for **some** $k$ ④ step: prove $P(k{+}1)$, *mark where IH used* ⑤ conclude ∀$n\\ge$ base. Strong induction: assume all $\\le k$.\n**Structural (graphs/trees):** take **arbitrary** $(k{+}1)$-object, *remove* leaf/vertex/source → IH → add back. Never grow a $k$-object.\n**Loop invariant:** init (holds before 1st iter) · maintenance $I(i)\\Rightarrow I(i+1)$ · exit+inv ⇒ goal · termination (bounded monotone var). Sorting inv must say \"**permutation of original**\".\n**Algorithm correctness:** soundness (output right, strong induction on size) + completeness (terminates; each call shrinks).\n**Contradiction · contrapositive ($\\neg Q\\Rightarrow\\neg P$) · cases · counterexample** (one suffices; test past small cases: $2^{11}-1=23\\cdot89$).\n> [!bad] A \"proof\" that restates the algorithm, or only a picture, gets no credit.",
+      "style": {
+        "accent": "#136f74"
+      }
+    },
+    {
+      "id": "sm",
+      "type": "text",
+      "page": 1,
+      "md": "## ▷ Stable matching (Gale–Shapley)\nPerfect + **no instability** ($m$ prefers $w'$, $w'$ prefers $m$). Free $m$ proposes to best untried $w$; $w$ trades up only. ≤ $n^2$ proposals → $O(n^2)$ with `Next[m]`, `Current[w]`, `Ranking[w][m]` (O(1) compare). Output man-optimal. Brute force $n!$; input size $\\Theta(n^2)$.",
+      "style": {
+        "accent": "#136f74"
+      }
+    },
+    {
+      "id": "graphs",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Graphs basics\n$n=|V|$, $m=|E|\\le\\binom n2$. **Handshake** $\\sum\\deg=2m$ (core of every $O(n+m)$ proof).\n**Tree:** connected + acyclic ⇔ connected with $m=n-1$ ⇔ unique $u$–$v$ path. $\\ge2$ leaves if $n\\ge2$ (endpoints of longest path). Binary tree: #2-child nodes $=L-1$.\n\n| rep | space | edge? | neighbours |\n|---|---|---|---|\n| adj. list | $O(n+m)$ | $O(\\deg)$ | $O(\\deg)$ |\n| adj. matrix | $O(n^2)$ | $O(1)$ | $O(n)$ |\n\n**BFS** (queue): layers $L_i$ = dist $i$ → unweighted shortest paths; non-tree edges span ≤1 layer. Mark visited on **enqueue**.\n**DFS** (stack/recursion): non-tree edges ancestor–descendant (undirected). Directed: back edge ⇔ cycle.\n**Components:** outer loop `for s: if unseen: BFS/DFS(s)` — still $O(n+m)$ total.\n**Bipartite** ⇔ no odd cycle: 2-colour BFS layers; same-layer edge ⇒ odd cycle. $O(n+m)$.\n> [!warn] Iterative DFS pops neighbours in **reverse** — push reversed to match recursive order.",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "directed",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Directed: SCC · DAG · topo\n**Strongly connected?** search from $s$ in $G$ **and** $G^{rev}$ both reach all. $O(n+m)$.\n**Kosaraju:** ① DFS on $G$, push on **finish** ② reverse graph ③ pop; DFS in $G^{rev}$ = one SCC. $O(n+m)$. SCC-condensation is a DAG.\n**DAG ⇔ topological order.** Every DAG has a source (walk back $n{+}1$ steps → repeat → cycle). Induct: remove source, order rest.\n**Kahn:** queue indeg-0; pop, output, decrement; <$n$ output ⇒ cycle. $O(n+m)$. Or DFS reverse finish order. Orders not unique.",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "scc",
+      "type": "mermaid",
+      "page": 1,
+      "src": "graph LR\n  A-->B\n  B-->D\n  D-->A\n  B-->C\n  C-->E",
+      "style": {
+        "fontSize": 2.2,
+        "card": false
+      },
+      "gap": 0.3
+    },
+    {
+      "id": "scccap",
+      "type": "text",
+      "page": 1,
+      "md": "SCCs {A,B,D} → {C} → {E}; Kahn on getting-dressed DAG: socks, undershorts, pants, shoes, watch, shirt, belt, tie, jacket.",
+      "style": {
+        "accent": "#2e6b3a",
+        "italic": true
+      },
+      "gap": 0.2
+    },
+    {
+      "id": "hwg",
+      "type": "text",
+      "page": 1,
+      "md": "#### Worked patterns\n**Trace** edges 1–2,1–9,2–6,2–5,2–3,3–7,4–6,8–9 from 1: BFS `1 2 9 6 5 3 8 4 7`; DFS `1 2 6 4 5 3 7 9 8`. State neighbour order.\n**Pigeonhole:** all deg $\\ge n/2$ ⇒ connected (non-adjacent $u,v$ share neighbour). Tight: $2\\times K_{n/2}$.\n**BFS cut node:** dist$(s,t)>n/2$ ⇒ some layer has 1 node; delete ⇒ disconnect.",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "gproofs",
+      "type": "text",
+      "page": 1,
+      "md": "## ① Greedy proof templates\n**Greedy** = process in an order, best choice now, never undo. Show a rule fails: 2–4 item counterexample with greedy vs OPT values.\n> **Stays ahead** (sequence + measure). ① greedy $g_1..g_k$, OPT $o_1..o_m$, same order ② claim ∀$r\\le\\min$: measure$(g_r)$ ≤/≥ measure$(o_r)$ ③ induct: $o_r$ still available to greedy at step $r$ ⇒ greedy's pick at least as good ④ $m>k$ ⇒ $o_{k+1}$ available after $g_k$ ⇒ greedy wouldn't stop. ⊥\n\n> **Exchange** (shape: sorted/no gaps). ① greedy has property P (no idle, no inversions) ② OPT lacks ⇒ local defect (**adjacent** inversion / first difference) ③ swap ⇒ cost doesn't rise, others unchanged ④ strictly closer (≤ $\\binom n2$ swaps) ⇒ OPT ≡ greedy. Ties = equal cost.\n\n**First-difference form:** OPT agreeing with greedy longest; differ at $i$ ⇒ build OPT agreeing on $i$ too. ⊥\nStays ahead: intervals, Dijkstra, towers, trucks. Exchange: EDF, paging, MST, Huffman, deliveries.",
+      "style": {
+        "accent": "#8b2e2e"
+      }
+    },
+    {
+      "id": "interval",
+      "type": "text",
+      "page": 1,
+      "md": "## ▷ Interval scheduling\n**Earliest finish first.** Sort by $f$, take if $s\\ge$ last end (touching OK, `>=`). $O(n\\log n)$. Stays ahead: $f(g_r)\\le f(o_r)$.\n❌ earliest start (long first blocks many) · ❌ shortest (short one blocks two) · ❌ fewest conflicts.\n❌ **weighted**: [0,1]=$1$ vs [0,10]=$100$ → needs DP.\n**Partitioning:** #resources = depth (max overlap); sort by start, heap of end times.",
+      "style": {
+        "accent": "#8b2e2e"
+      },
+      "keep": true
+    },
+    {
+      "id": "late",
+      "type": "text",
+      "page": 1,
+      "md": "## ▷ Min max lateness\n$l_i=\\max(0,f_i-d_i)$, minimize **max**. **EDF**: sort by $d_i$, no idle. $O(n\\log n)$.\n❌ shortest $t$ first: (1,100),(10,10) ⇒ late 1 vs 0 · ❌ min slack: (1,2),(10,10) ⇒ late **9** vs 1.\nExchange: no idle; inversion ⇒ adjacent inversion; swap: later job ends at old $f$ with bigger $d$ ⇒ max not ↑; same-deadline orders equal.\n**Supercomputer→PC:** sort **decreasing** $f_i$ (PC time). **Unit deliveries max pay:** feasible ⇔ $N_S(t)\\le t$ ∀$t$; add by ↓ pay if feasible, output EDF.",
+      "style": {
+        "accent": "#8b2e2e"
+      },
+      "keep": true
+    },
+    {
+      "id": "dijk",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Dijkstra (ℓ ≥ 0)\nGrow $S$; add $v\\notin S$ minimizing $d(u)+\\ell_{uv}$. Proof: any other path leaves $S$ at $(x,y)$, already $\\ge d'(y)\\ge d'(v)$.\nHeap: **$O(m\\log n)$**; naive $O(mn)$. Settle on **extract** (tentative d can drop).\n❌ negative edges. Time-dependent edges OK if FIFO ($t+w(e,t)$ nondecreasing): run on arrival times.\nTie-break fewest edges: keys (weight, #edges) or $w'=nw+1$.",
+      "style": {
+        "accent": "#a8610a"
+      },
+      "keep": true
+    },
+    {
+      "id": "paging",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Optimal caching\n**Farthest-in-future** (offline optimal). $k=2$, `a b c b c a b` ⇒ 4 faults.\nExchange: $S$ agrees for $j$ steps; at $j{+}1$ S evicts $u$, FF $v$ ⇒ $S'$ evicts $v$, copies $S$ until $u$ requested (before $v$!) then resyncs, no extra faults.\nOnline ≠ optimal: FWF `1 2 3 1` (4 vs 3), LRU `1 2 3 1 3` (4 vs 3); both $k$-competitive.\nImpl: next-use array (backward pass) + max-heap lazy deletion ⇒ $O(n\\log k)$.",
+      "style": {
+        "accent": "#a8610a"
+      },
+      "keep": true
+    },
+    {
+      "id": "mst",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Minimum spanning tree\n**Cut prop:** min edge crossing any cut $(S,V\\setminus S)$ is in **every** MST. **Cycle prop:** max edge on any cycle is in **no** MST. (Cycle crosses a cut an **even** # times → replacement edge.)\n\n| alg | rule | DS | time |\n|---|---|---|---|\n| Kruskal | ↑ edges, skip cycles | union-find | $O(m\\log n)$ |\n| Prim | cheapest edge leaving $S$ | heap | $O(m\\log n)$ |\n| Rev-delete | ↓ edges, delete unless disconnects | — | — |\n\n**Union-find:** union by rank, Find $O(\\log n)$ (≈$\\alpha(n)$ w/ path compression).\n**Distinct costs ⇒ unique MST** (cheapest edge of $T\\triangle T'$ ⊥). Ties: consistent tie-break.\n**Add edge $(v,w,c)$:** path $P$ in $T$ (DFS, $O(n)$); if $c<\\max P$ swap out max. MST ⇔ every non-tree edge ≥ all edges on its tree path.\n**k-clustering** (max spacing): Kruskal, stop at $k$ components = drop $k{-}1$ biggest MST edges. $O(n^2\\log n)$.",
+      "style": {
+        "accent": "#2e6b3a"
+      }
+    },
+    {
+      "id": "huff",
+      "type": "text",
+      "page": 1,
+      "md": "## ⊕ Huffman / prefix codes\nPrefix code ⇔ leaves of binary tree; min ABL $=\\sum f_x\\,\\text{depth}(x)$. Optimal tree **full**; lower freq ⇒ deeper; two rarest are **siblings at max depth**.\n**Merge two lowest** freqs repeatedly; heap ⇒ $O(k\\log k)$. ABL$(T)=$ABL$(T')+f_w$.\n❌ top-down Shannon–Fano: .32,.25,.2,.18,.05 ⇒ 2.25 vs Huffman **2.23**.",
+      "style": {
+        "accent": "#a8610a"
+      },
+      "keep": true
+    },
+    {
+      "id": "hufftree",
+      "type": "mermaid",
+      "page": 1,
+      "src": "graph TD\n  R[1.00]-->X[.43]\n  R-->Y[.57]\n  X-->c[c .20]\n  X-->Z[.23]\n  Z-->dd[d .18]\n  Z-->ee[e .05]\n  Y-->a[a .32]\n  Y-->b[b .25]",
+      "style": {
+        "fontSize": 2.2,
+        "card": false
+      },
+      "gap": 0.3
+    },
+    {
+      "id": "towers",
+      "type": "text",
+      "page": 1,
+      "md": "#### Other greedy HW\n**Cell towers:** leftmost uncovered house $x$ → tower at $x+4$; stays ahead $g_i\\ge o_i$. **Trucks** (fixed order, fill until next doesn't fit): $g_t\\ge o_t$. **Bin packing FFI** not optimal: ½−ε,½−ε,½+ε,½+ε ⇒ 3 vs 2.",
+      "style": {
+        "accent": "#8b2e2e"
+      }
+    },
+    {
+      "id": "dc",
+      "type": "text",
+      "page": 1,
+      "md": "## ▷ Divide & conquer\nDivide → conquer (recurse) → combine. Prove: strong induction on size + combine-step correctness + each call shrinks.\n**Mergesort** $2T(n/2)+n$; merge $O(n)$.\n**Inversions** (pairs $i<j$, $a_i>a_j$): merge-count — when taking from **right** half, add **#remaining** in left. Return sorted list too. Ties: take left first. $O(n\\log n)$.\n**QuickSelect** $k$-th: partition, recurse left with $k$ or right with **$k-r$**; worst $T(n-1)+n=O(n^2)$.\n**Median of medians:** groups of **5**, pivot = MoM of medians ⇒ ≥ $3n/10$ each side ⇒ $T(n/5)+T(7n/10)+n=O(n)$ (two recursive calls; groups of 3 ⇒ $n\\log n$).",
+      "style": {
+        "accent": "#6b3e8b"
+      }
+    },
+    {
+      "id": "kara",
+      "type": "text",
+      "page": 1,
+      "md": "#### Karatsuba\n$x=x_12^{n/2}+x_0$: $xy=x_1y_1 2^n+(x_1y_0+x_0y_1)2^{n/2}+x_0y_0$. 4 calls ⇒ $n^2$. Use $p=(x_1+x_0)(y_1+y_0)$, middle $=p-x_1y_1-x_0y_0$ ⇒ **3 calls**, $O(n^{\\lg 3})$. Adds/shifts are $O(n)$.",
+      "style": {
+        "accent": "#6b3e8b"
+      },
+      "gap": 0
+    },
+    {
+      "id": "closest",
+      "type": "text",
+      "page": 1,
+      "md": "#### Closest pair\nPre-sort $P_x,P_y$ **once**; split by line $L$; $\\delta=\\min(\\delta_Q,\\delta_R)$. Strip: points within $\\delta$ of $L$ (**each side**), sorted by $y$; compare each to next **15** ($\\delta/2$ boxes, ≤1 point each; 16 apart ⇒ 3 rows ⇒ $\\ge 3\\delta/2$). $2T(n/2)+O(n)=O(n\\log n)$; re-sorting per call ⇒ $n\\log^2 n$.\n**Max subarray:** max(left, right, crossing = best suffix of left + best prefix of right) ⇒ $O(n\\log n)$.",
+      "style": {
+        "accent": "#6b3e8b"
+      },
+      "gap": 0
+    },
+    {
+      "id": "traps",
+      "type": "text",
+      "page": 1,
+      "md": "## ⚠ Exam traps\n> [!stop] Prove **both** directions for Θ · mark IH use · arbitrary $(k{+}1)$ instance · loop inv needs \"permutation\"\n- Stays ahead: lemma for **every** $r$ + separate \"$m>k$\" step\n- EDF: swap **adjacent** inversions; remove idle first; $|S|=|S^*|$ ≠ equal cost\n- Lateness is $\\max(0,\\cdot)$; objective is **max**, not sum\n- Cut ↔ **min** edge, cycle ↔ **max** edge; uniqueness needs distinct weights; bridges on no cycle\n- Kosaraju stack = **finish** order, 2nd pass on $G^{rev}$\n- Strongly connected needs $G$ **and** $G^{rev}$\n- Don't forget combine cost ($O(n)$ merge, $O(n)$ add)\n- QuickSelect right ⇒ $k-r$; MoM ⇒ 2 recursive calls\n- $O(n+m)$ needs adjacency **list**; matrix ⇒ $O(n^2)$",
+      "style": {
+        "accent": "#8b2e2e"
+      }
+    }
+  ]
+}

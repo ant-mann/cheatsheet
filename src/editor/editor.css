@@ -1,0 +1,39 @@
+body { margin: 0; font: 13px system-ui, sans-serif; color: #222; background: #e8e8ea; }
+.editor { display: flex; flex-direction: column; height: 100vh; }
+.editor header { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #fff; border-bottom: 1px solid #ccc; flex-wrap: wrap; }
+.editor header .sep { width: 1px; height: 18px; background: #ddd; margin: 0 4px; }
+.editor .good { color: #080; }
+.editor .bad { color: #c00; font-weight: 600; }
+.editor main { flex: 1; display: flex; min-height: 0; }
+.editor .canvas { flex: 1; overflow: auto; padding: 24px; }
+.editor .page { box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2); }
+.editor .el { cursor: move; }
+.editor aside { width: 380px; overflow: auto; background: #fff; border-left: 1px solid #ccc; }
+.banner { padding: 8px 12px; white-space: pre-wrap; font-family: monospace; }
+.banner.error { background: #fee; color: #900; }
+button { font: inherit; padding: 1px 6px; }
+
+.inspector { padding: 8px 10px 40px; }
+.inspector h4 { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase; color: #777; }
+.inspector .row { display: flex; gap: 4px; align-items: center; }
+.inspector .id { flex: 1; font: 600 14px monospace; }
+.inspector .type { color: #777; }
+.inspector textarea { width: 100%; box-sizing: border-box; font: 12px monospace; }
+.inspector .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+.inspector .field { display: flex; align-items: center; gap: 3px; margin: 2px 0; }
+.inspector .field > span { width: 48px; color: #555; flex: none; }
+.inspector .field input:not([type]), .inspector .field select { flex: 1; min-width: 0; }
+.inspector .field button { padding: 0 4px; }
+.inspector .grid2 .field > span { width: 46px; }
+.inspector .grid2 .field button { display: none; }
+.inspector .check > span { width: auto; }
+.inspector .wide { width: 100%; margin: 4px 0; }
+.issue { padding: 3px 6px; margin: 3px 0; border-radius: 3px; font-size: 12px; cursor: default; }
+.issue.error { background: #fee; color: #900; }
+.issue.warning { background: #ffd; color: #640; }
+.muted { color: #888; }
+
+.modal { position: fixed; inset: 0; background: #fff; z-index: 1000; display: flex; flex-direction: column; }
+.modal-bar { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border-bottom: 1px solid #ccc; }
+.modal-bar span { flex: 1; color: #555; }
+.modal-body { flex: 1; min-height: 0; }
